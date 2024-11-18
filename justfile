@@ -3,10 +3,7 @@ default: test-all
 
 # Test all days
 test-all:
-    #!/home/natemcintosh/.cargo/bin/nu
-    # Have to use bash here because nu incorrectly interprets `./...`
-    # This syntax is a go shortcut for testing everything it can find.
-    /usr/bin/bash -c "go test ./..."
+    go test "./..."
 
 alias td := test-day
 
