@@ -4,16 +4,16 @@ default: test-all
 # Test all days
 test-all:
     #!/home/natemcintosh/.cargo/bin/nu
-    echo "Running tests..."
-    # For each folder starting with "day", run the tests in that folder
-    ls day*
-        | where type == dir
-        # Run the tests in the folder
-        | each { |folder| go test $"./($folder.name)" }
+    # Have to use bash here because nu incorrectly interprets `./...`
+    # This syntax is a go shortcut for testing everything it can find.
+    /usr/bin/bash -c "go test ./..."
+        | lines
         # Split into columns with these column names
-        | split column --regex '\s+' status folder runtime
+        | split column --regex '\t' status folder runtime
         # Sort by the status, then folder
         | sort-by status folder
+        # Trim the status column
+        | update status {str trim}
 
 alias td := test-day
 
