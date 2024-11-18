@@ -69,12 +69,12 @@ type RGB struct {
 	R, G, B int
 }
 
-func (self RGB) Contains(other RGB) bool {
-	return (self.R >= other.R) && (self.G >= other.G) && (self.B >= other.B)
+func (rgb RGB) Contains(other RGB) bool {
+	return (rgb.R >= other.R) && (rgb.G >= other.G) && (rgb.B >= other.B)
 }
 
-func (self RGB) Power() int {
-	return self.R * self.G * self.B
+func (rgb RGB) Power() int {
+	return rgb.R * rgb.G * rgb.B
 }
 
 // The Elf would first like to know which games would have been possible if the bag
@@ -160,17 +160,17 @@ func main() {
 		games[i] = parse_game(line)
 	}
 	p1 := part1(games)
-	parse_time := time.Now().Sub(parse_start)
+	parse_time := time.Since(parse_start)
 
 	// === Part 1 ====================================================
 	p1_start := time.Now()
-	p1_time := time.Now().Sub(p1_start)
+	p1_time := time.Since(p1_start)
 	fmt.Printf("Part 1: %v\n", p1)
 
 	// === Part 2 ====================================================
 	p2_start := time.Now()
 	p2 := part2(games)
-	p2_time := time.Now().Sub(p2_start)
+	p2_time := time.Since(p2_start)
 	fmt.Printf("Part 2: %v\n", p2)
 
 	// === Print Results ============================================
