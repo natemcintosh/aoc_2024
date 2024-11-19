@@ -77,6 +77,17 @@ func (rgb RGB) Power() int {
 	return rgb.R * rgb.G * rgb.B
 }
 
+type Draws []RGB
+
+func (draws Draws) ContainedBy(other RGB) bool {
+	for _, draw := range draws {
+		if !other.Contains(draw) {
+			return false
+		}
+	}
+	return true
+}
+
 // The Elf would first like to know which games would have been possible if the bag
 // contained only 12 red cubes, 13 green cubes, and 14 blue cubes?
 //
@@ -85,7 +96,7 @@ func (rgb RGB) Power() int {
 // at one point the Elf showed you 20 red cubes at once; similarly, game 4 would also
 // have been impossible because the Elf showed you 15 blue cubes at once. If you add up
 // the IDs of the games that would have been possible, you get 8.
-func part1(games [][]RGB) int {
+func part1(games []Draws) int {
 	var result int = 0
 
 	// The max game, over which you should not go
@@ -93,20 +104,8 @@ func part1(games [][]RGB) int {
 
 	// Iterate over the games, checking if they are possible
 	// and if so, adding their index to the result
-	for game_idx, game := range games {
-		// A flag for marking if a game is bad
-		is_bad := false
-		// Iterate over the draws, checking if they are possible
-		// and if not, break out of this loop
-		for _, draw := range game {
-			if !max_game.Contains(draw) {
-				is_bad = true
-				break
-			}
-		}
-
-		// After checking all the cases, if the game is not bad, add it to the result
-		if !is_bad {
+	for game_idx, draws := range games {
+		if draws.ContainedBy(max_game) {
 			result += game_idx + 1
 		}
 	}
@@ -123,7 +122,7 @@ func part1(games [][]RGB) int {
 // in each game you played, what is the fewest number of cubes
 // of each color that could have been in the bag to make the
 // game possible?
-func part2(games [][]RGB) int {
+func part2(games []Draws) int {
 	game_powers := 0
 	for _, game := range games {
 		smallest_rgb := RGB{R: 0, G: 0, B: 0}
@@ -155,7 +154,7 @@ func main() {
 	// === Parse ====================================================
 	raw_text := utils.ReadFile("example_day/input.txt")
 	lines := strings.Split(raw_text, "\n")
-	games := make([][]RGB, len(lines))
+	games := make([]Draws, len(lines))
 	for i, line := range lines {
 		games[i] = parse_game(line)
 	}
