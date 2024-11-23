@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"log"
 	"os"
 )
 
@@ -9,7 +8,7 @@ import (
 func ReadFile(filename string) string {
 	byte_contents, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return string(byte_contents)
 }
