@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,8 +19,8 @@ func parse(raw_text string) ([]int, []int) {
 
 	for idx, line := range lines {
 		parts := strings.Fields(line)
-		l[idx], _ = strconv.Atoi(parts[0])
-		r[idx], _ = strconv.Atoi(parts[1])
+		l[idx] = utils.ParseInt(parts[0])
+		r[idx] = utils.ParseInt(parts[1])
 	}
 
 	// Sort the slices
