@@ -69,6 +69,21 @@ func part2(l, r []int) int {
 	return res
 }
 
+// Same as above, but use slices.BinarySearch to find the extent of a given number
+func part2_v2(l, r []int) int {
+	// For each item in the left, find its frequency, and multiply by it
+	res := 0
+	for _, li := range l {
+		// Look up the extent of this item in `r`
+		start, _ := slices.BinarySearch(r, li)
+		end, _ := slices.BinarySearch(r, li+1)
+		n := end - start
+		res += li * n
+	}
+
+	return res
+}
+
 func main() {
 	// Time how long it takes to read the file
 	// and parse the games

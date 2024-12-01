@@ -39,6 +39,10 @@ func TestPart2(t *testing.T) {
 	got := part2(l, r)
 	want := 31
 	assert.Equal(t, want, got)
+
+	// Again, with part2_v2
+	got = part2_v2(l, r)
+	assert.Equal(t, want, got)
 }
 
 func TestPart2RealInput(t *testing.T) {
@@ -47,4 +51,29 @@ func TestPart2RealInput(t *testing.T) {
 	got := part2(l, r)
 	want := 23609874
 	assert.Equal(t, want, got)
+
+	// Again, with part2_v2
+	got = part2_v2(l, r)
+	assert.Equal(t, want, got)
+}
+
+// Set up a benchmark table, for the purpose of comparing the two part2 functions in
+// their speed and allocations.
+func BenchmarkPart2(b *testing.B) {
+	raw_text := utils.ReadFile("input.txt")
+	l, r := parse(raw_text)
+	benchmarks := []struct {
+		name string
+		fn   func([]int, []int) int
+	}{
+		{"part2", part2},
+		{"part2_v2", part2_v2},
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.fn(l, r)
+			}
+		})
+	}
 }
