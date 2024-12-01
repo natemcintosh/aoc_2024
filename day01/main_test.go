@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/natemcintosh/aoc_2024/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +20,6 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart1RealInput(t *testing.T) {
-	raw_text := utils.ReadFile("input.txt")
 	l, r := parse(raw_text)
 	got := part1(l, r)
 	want := 1646452
@@ -46,7 +44,6 @@ func TestPart2(t *testing.T) {
 }
 
 func TestPart2RealInput(t *testing.T) {
-	raw_text := utils.ReadFile("input.txt")
 	l, r := parse(raw_text)
 	got := part2(l, r)
 	want := 23609874
@@ -60,7 +57,6 @@ func TestPart2RealInput(t *testing.T) {
 // Set up a benchmark table, for the purpose of comparing the two part2 functions in
 // their speed and allocations.
 func BenchmarkPart2(b *testing.B) {
-	raw_text := utils.ReadFile("input.txt")
 	l, r := parse(raw_text)
 	benchmarks := []struct {
 		name string

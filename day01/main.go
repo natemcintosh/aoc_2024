@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"slices"
 	"strings"
@@ -11,7 +12,7 @@ import (
 
 // parse the raw text into two slices of ints, each sorted
 func parse(raw_text string) ([]int, []int) {
-	lines := strings.Split(raw_text, "\n")
+	lines := strings.Split(strings.TrimSpace(raw_text), "\n")
 
 	// Create the output types
 	l := make([]int, len(lines))
@@ -83,13 +84,17 @@ func part2_v2(l, r []int) int {
 	return res
 }
 
+// The input text of the puzzle
+//
+//go:embed input.txt
+var raw_text string
+
 func main() {
 	// Time how long it takes to read the file
 	// and parse the games
 	parse_start := time.Now()
 
 	// === Parse ====================================================
-	raw_text := utils.ReadFile("day01/input.txt")
 	l, r := parse(raw_text)
 	parse_time := time.Since(parse_start)
 
