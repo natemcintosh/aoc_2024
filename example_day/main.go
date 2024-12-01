@@ -158,11 +158,11 @@ func main() {
 	for i, line := range lines {
 		games[i] = parse_game(line)
 	}
-	p1 := part1(games)
 	parse_time := time.Since(parse_start)
 
 	// === Part 1 ====================================================
 	p1_start := time.Now()
+	p1 := part1(games)
 	p1_time := time.Since(p1_start)
 	fmt.Printf("Part 1: %v\n", p1)
 
