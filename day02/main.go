@@ -106,10 +106,10 @@ func report_is_good_p2(report []int, diffs []int) bool {
 		return true
 	}
 
+	new_report := make([]int, len(report)-1)
 	// Try removing each element and checking if it is valid
 	for idx := range report {
 		// Create a new report by removing the element at index i
-		new_report := make([]int, len(report)-1)
 		copy(new_report, report[:idx])
 		copy(new_report[idx:], report[idx+1:])
 		new_diffs := diff(new_report)
