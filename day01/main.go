@@ -90,11 +90,9 @@ func part2_v2(l, r []int) int {
 var raw_text string
 
 func main() {
-	// Time how long it takes to read the file
-	// and parse the games
-	parse_start := time.Now()
-
 	// === Parse ====================================================
+	// Time how long it takes to read the file and parse the games
+	parse_start := time.Now()
 	l, r := parse(raw_text)
 	parse_time := time.Since(parse_start)
 
