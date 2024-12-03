@@ -2,6 +2,8 @@ package utils
 
 import (
 	"os"
+	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -31,4 +33,14 @@ func ParseFloat(s string) float64 {
 		panic(err)
 	}
 	return n
+}
+
+// GetGroups is essentially the same as FindAllStringSubmatch, but it returns
+// just the groups and not the full match
+func GetGroups(re *regexp.Regexp, s string) [][]string {
+	matches := re.FindAllStringSubmatch(s, -1)
+	for _, match := range matches {
+		match = slices.Delete(match, 0, 1)
+	}
+	return matches
 }
