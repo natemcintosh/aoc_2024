@@ -33,3 +33,9 @@ func TestPart2(t *testing.T) {
 	want := 48
 	assert.Equal(t, want, got)
 }
+
+func TestPart2Real(t *testing.T) {
+	got := part2(raw_text)
+	want := 53783319
+	assert.Equal(t, want, got)
+}
