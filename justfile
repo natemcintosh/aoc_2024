@@ -23,3 +23,11 @@ run-day day:
     let sday = ({{ day }} | into string)
     let formatted_day = if ($sday | str length) == 1 { ['0', $sday] | str join } else { $sday }
     go run $"./day($formatted_day)/main.go"
+
+# Create the structure for a new day
+new-day day:
+    #!{{ home_directory() }}/.cargo/bin/nu
+    mkdir $"day({{ day }})"
+    touch $"day({{ day }})/input.txt"
+    echo "package main" | save $"day({{ day }})/main.go"
+    echo "package main" | save $"day({{ day }})/main_test.go"
