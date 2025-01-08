@@ -8,7 +8,19 @@ import (
 	"time"
 )
 
-func create_disk(input string) []int {
+// A compressed disk entry
+type DiskEntry struct {
+	// If for empty space, file_id is -1
+	file_id int
+
+	// The start index of this entry
+	start int
+
+	// How long is this entry
+	length int
+}
+
+func create_disk(input string) ([]int, []DiskEntry) {
 	input = strings.TrimSpace(input)
 	// Parse each character of the string into an integer
 	nums := make([]int, len(input))
@@ -27,6 +39,7 @@ func create_disk(input string) []int {
 	// Make the slice that will describe the disk space. -1 for empty, and # for file
 	// where # is an incrementing integer
 	disk := make([]int, total_len)
+	compressed_disk := make([]DiskEntry, 0)
 
 	// Fill the disk with the file IDs
 	file_id := 0
@@ -34,12 +47,27 @@ func create_disk(input string) []int {
 	for idx, num := range nums {
 		// For even idx, this item is a file, and we need to fill the disk with the file_id of length num
 		if idx%2 == 0 {
+			// Add the compressed disk entry
+			compressed_disk = append(compressed_disk, DiskEntry{
+				file_id: file_id,
+				start:   disk_offset,
+				length:  num,
+			})
+
+			// Add the file_id to the disk
 			for i := 0; i < num; i++ {
 				disk[disk_offset] = file_id
 				disk_offset += 1
 			}
 			file_id += 1
 		} else {
+			// Add the compressed disk entry
+			compressed_disk = append(compressed_disk, DiskEntry{
+				file_id: -1,
+				start:   disk_offset,
+				length:  num,
+			})
+
 			// For odd idx, this item is a file, and we need to fill the disk with -1 of length num
 			for i := 0; i < num; i++ {
 				disk[disk_offset] = -1
@@ -48,7 +76,7 @@ func create_disk(input string) []int {
 		}
 	}
 
-	return disk
+	return disk, compressed_disk
 }
 
 func part1(disk []int) int {
@@ -85,6 +113,32 @@ func part1(disk []int) int {
 	return sum
 }
 
+// This time, attempt to move whole files to the leftmost span of free space blocks that
+// could fit the file. Attempt to move each file exactly once in order of decreasing
+// file ID number starting with the file with the highest file ID number. If there is no
+// span of free space to the left of a file that is large enough to fit the file, the
+// file does not move.
+func part2(compressed_disk []DiskEntry) int {
+	// Create a copy of the disk
+	disk := slices.Clone(compressed_disk)
+
+	// Sort the disk by start point
+	slices.SortFunc(disk, func(a, b DiskEntry) int {
+		return a.start - b.start
+	})
+
+	// Create an index that starts at the back of the disk
+	// back_idx := disk[len(disk)-1].start + disk[len(disk)-1].length - 1
+
+	// Iterate through the disk in reverse order
+	for disk_entry_idx := len(disk) - 1; disk_entry_idx >= 0; disk_entry_idx-- {
+
+	}
+
+	return 0
+
+}
+
 // The input text of the puzzle
 //
 //go:embed input.txt
@@ -93,7 +147,7 @@ var raw_text string
 func main() {
 	// === Parse Input ===============================================
 	parse_start := time.Now()
-	disk := create_disk(raw_text)
+	disk, compressed_disk := create_disk(raw_text)
 	parse_time := time.Since(parse_start)
 
 	// === Part 1 ====================================================
@@ -103,13 +157,13 @@ func main() {
 	fmt.Printf("Part 1: %v\n", p1)
 
 	// === Part 2 ====================================================
-	// p2_start := time.Now()
-	// p2 := part2(raw_text)
-	// p2_time := time.Since(p2_start)
-	// fmt.Printf("Part 2: %v\n", p2)
+	p2_start := time.Now()
+	p2 := part2(compressed_disk)
+	p2_time := time.Since(p2_start)
+	fmt.Printf("Part 2: %v\n", p2)
 
 	// === Print Results ============================================
 	fmt.Printf("\n\nSetup took %v\n", parse_time)
 	fmt.Printf("Part 1 took %v\n", p1_time)
-	// fmt.Printf("Part 2 took %v\n", p2_time)
+	fmt.Printf("Part 2 took %v\n", p2_time)
 }

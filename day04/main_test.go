@@ -93,3 +93,30 @@ func TestPart1Real(t *testing.T) {
 	want := 2613
 	assert.Equal(t, want, got)
 }
+
+var test2_input string = `M.S
+.A.
+M.S`
+
+// func TestPart2Small(t *testing.T) {
+// 	got := part2(NewBoard(test2_input))
+// 	want := 1
+// 	assert.Equal(t, want, got)
+// }
+
+var test2_large_input string = `.M.S......
+..A..MSMS.
+.M.S.MAA..
+..A.ASMSM.
+.M.S.M....
+..........
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.
+..........`
+
+// func TestPart2Large(t *testing.T) {
+// 	got := part2(NewBoard(test2_large_input))
+// 	want := 9
+// 	assert.Equal(t, want, got)
+// }

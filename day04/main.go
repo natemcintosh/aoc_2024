@@ -203,12 +203,13 @@ func part1(board Board) int {
 // .A.
 // M.S
 // Or any of its 90 degree rotations
-// func part2(board Board) int {
-// 	start_row_idx := 1
-// 	end_row_idx := board.height - 2
-// 	start_col_idx := 1
-// 	end_col_idx := board.width - 2
-// }
+func part2(board Board) int {
+	// start_row_idx := 1
+	// end_row_idx := board.height - 2
+	// start_col_idx := 1
+	// end_col_idx := board.width - 2
+	return 0
+}
 
 // The input text of the puzzle
 //

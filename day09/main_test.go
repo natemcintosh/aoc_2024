@@ -13,7 +13,7 @@ func TestCreateDiskSmall(t *testing.T) {
 	want := []int{
 		0, -1, -1, 1, 1, 1, -1, -1, -1, -1, 2, 2, 2, 2, 2,
 	}
-	got := create_disk(small_input)
+	got, _ := create_disk(small_input)
 	assert.Equal(t, want, got)
 }
 
@@ -37,27 +37,31 @@ func TestCreateDisk(t *testing.T) {
 		-1,
 		8, 8, 8, 8,
 		9, 9}
-	got := create_disk(test_input)
+	got, _ := create_disk(test_input)
 	assert.Equal(t, want, got)
 }
 
 func TestPart1Small(t *testing.T) {
-	disk := create_disk(small_input)
+	disk, _ := create_disk(small_input)
 	got := part1(disk)
 	want := 60
 	assert.Equal(t, want, got)
 }
 
 func TestPart1(t *testing.T) {
-	disk := create_disk(test_input)
+	disk, _ := create_disk(test_input)
 	got := part1(disk)
 	want := 1928
 	assert.Equal(t, want, got)
 }
 
 func TestPart1Real(t *testing.T) {
-	disk := create_disk(raw_text)
+	disk, _ := create_disk(raw_text)
 	got := part1(disk)
 	want := 6446899523367
 	assert.Equal(t, want, got)
+}
+
+func TestPart2(t *testing.T) {
+
 }
