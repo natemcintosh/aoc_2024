@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"maps"
 	"strconv"
 	"strings"
 	"time"
@@ -59,11 +60,16 @@ func solve(stones []int, n_steps int) int {
 
 	// For n_steps, update all the stones in `sm`
 	for i := 0; i < n_steps; i++ {
+		// Make a copy of sm to put the new values in
+		sm_copy := maps.Clone(sm)
 		// For each stone in `sm`
 		for stone_val := range sm {
-			sm = update_stone(stone_val, sm)
-			fmt.Printf("Step %d, stone %v: %v\n", i+1, stone_val, sm)
+			sm_copy = update_stone(stone_val, sm_copy)
 		}
+
+		// Overwrite sm with sm_copy
+		sm = maps.Clone(sm_copy)
+		fmt.Printf("After step %d: %v\n", i+1, sm)
 	}
 
 	// Count how many of each type of stone we have
