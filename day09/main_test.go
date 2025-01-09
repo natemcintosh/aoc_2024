@@ -62,6 +62,41 @@ func TestPart1Real(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func TestPart2(t *testing.T) {
+func TestDiskEntryCheckSum(t *testing.T) {
+	tests := []struct {
+		name string
+		de   DiskEntry
+		want int
+	}{
+		{"start at 0", DiskEntry{start: 0, length: 1, file_id: 1}, 0},
+		{"start at 0, longer", DiskEntry{start: 0, length: 5, file_id: 1}, 10},
 
+		{"empty", DiskEntry{start: 0, length: 5, file_id: -1}, 0},
+
+		{"empty 2", DiskEntry{start: 2, length: 5, file_id: -1}, 0},
+
+		{"start at 0 2", DiskEntry{start: 0, length: 5, file_id: 2}, 20},
+		{"10 to 20", DiskEntry{start: 10, length: 10, file_id: 2}, 290},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.de.CheckSum()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestPart2(t *testing.T) {
+	_, compressed_disk := create_disk(test_input)
+	got := part2(compressed_disk)
+	want := 2858
+	assert.Equal(t, want, got)
+}
+
+func TestPart2Real(t *testing.T) {
+	_, compressed_disk := create_disk(raw_text)
+	got := part2(compressed_disk)
+	want := 6478232739671
+	assert.Equal(t, want, got)
 }
