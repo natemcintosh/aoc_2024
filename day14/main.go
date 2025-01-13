@@ -173,9 +173,9 @@ func part2(robots []Robot, board_x, board_y, max_iters int) int {
 
 		// Look for 10+ consecutive columns with at least one robot in each.
 		for _, row := range arr {
-			if longest_nonzero_consecutive(row) >= 8 {
-				PrintBoard(robots, board_x, board_y)
-				return step_n
+			if longest_nonzero_consecutive(row) >= 10 {
+				// PrintBoard(robots, board_x, board_y)
+				return step_n + 1
 			}
 		}
 	}

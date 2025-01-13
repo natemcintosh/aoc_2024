@@ -94,3 +94,10 @@ func TestLongestConsecutive(t *testing.T) {
 		})
 	}
 }
+
+func TestPart2Real(t *testing.T) {
+	robots := parse_robots(raw_text)
+	got := part2(robots, 101, 103, 10000)
+	want := 8258
+	assert.Equal(t, want, got)
+}
