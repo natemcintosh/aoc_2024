@@ -33,9 +33,16 @@ var NoMatchFound = fmt.Errorf("no match found")
 // fit at the start of rem. Then it recursively calls itself with the remaining string and the
 // remaining patterns.
 //
-// If it find a complete match, it returns the []string of the patterns that make up the match,
-// otherwise it returns an error.
-func inner_find_matches(rem string, matched_so_far, available_patterns []string) ([]string, error) {
+// If it find a complete match, it adds that to the count of ways the string can be made
+func inner_find_matches(rem string, available_patterns []string, n_matches int, n_ways map[string]int) int {
+	// If we've already calculated the number of ways to build rem, return it
+	if n, ok := n_ways[rem]; ok {
+		return n
+	}
+
+	// Keep track of the number of ways we can build rem
+	n_ways_rem := 0
+
 	// For each match, run find_matches on the remaining string all the
 	// available_patterns, passing in the ones matched so far
 	for _, m := range available_patterns {
@@ -44,47 +51,37 @@ func inner_find_matches(rem string, matched_so_far, available_patterns []string)
 			continue
 		}
 
-		// add this m to matched_so_far
-		matched_so_far := append(matched_so_far, m)
-
-		// If we've matched all the way to the end, return matched_so_far
+		// If we've matched all the way to the end, return n_matches + 1
 		if len(rem) == len(m) {
-			return matched_so_far, nil
+			n_matches += 1
+
+			// Add the number of ways we can build rem to the map
+			n_ways[rem] += 1
+			continue
 		}
 
 		// Call the recursive function
-		// If it returns an error, continue
-		final_match, err := inner_find_matches(rem[len(m):], matched_so_far, available_patterns)
-
-		if err != nil {
-			continue
-		} else {
-			return final_match, nil
-		}
-
+		new_ways := inner_find_matches(rem[len(m):], available_patterns, n_matches, n_ways)
+		n_matches += new_ways
+		n_ways_rem += new_ways
 	}
 
-	// If we get here, it means we didn't find a match
-	return nil, NoMatchFound
+	// Add the number of ways we can build rem to the map
+	if n_ways_rem > 0 {
+		n_ways[rem] += n_ways_rem
+	}
+
+	return n_matches
 }
 
 // FindMatches takes in a string and a list of patterns and sees which of the available_patterns
 // fit at the start of rem. Then it recursively calls itself with the remaining string and the
-// remaining patterns.
-// If it find a complete match, it returns the []string of the patterns that make up the match,
-// otherwise it returns an error.
+// avilable patterns.
+// If it find a complete match, it adds one to the count of ways the string can be made.
 // If it returns an error, it means no match was found.
-func FindMatches(to_create string, available_patterns []string) ([]string, error) {
-	// Sort the available_patterns by length, longest first
-	// This is because we want to try to match the longest patterns first
-	slices.SortStableFunc(available_patterns, func(a, b string) int {
-		l_diff := len(b) - len(a)
-		if l_diff != 0 {
-			return l_diff
-		}
-		return strings.Compare(a, b)
-	})
-
+// Keep track of the number of ways we can build any given string, so we don't have to recalculate it
+// multiple times
+func FindMatches(to_create string, available_patterns []string, n_ways map[string]int) int {
 	// Filter available_patterns down to only those that are contained in to_create
 	ap := make([]string, 0, len(available_patterns))
 	for _, p := range available_patterns {
@@ -93,23 +90,63 @@ func FindMatches(to_create string, available_patterns []string) ([]string, error
 		}
 	}
 
-	// If ap is empty, return nil, fmt.Errorf("no match found")
+	// If ap is empty, return 0
 	if len(ap) == 0 {
-		return nil, NoMatchFound
+		return 0
 	}
 
-	return inner_find_matches(to_create, make([]string, 0), ap)
+	return inner_find_matches(to_create, ap, 0, n_ways)
 }
 
-func part1(desired_patterns []string, building_blocks []string) int {
-	sum := 0
-	for _, dp := range desired_patterns {
-		_, err := FindMatches(dp, building_blocks)
-		if err == nil {
-			sum += 1
+// prep_map prepares the map of how many ways we can build each pattern. Critically, it
+// also checks for any cases where a building block can be built in multiple ways. E.g.
+// if we have building blocks ["wr", "w", "r"], then we can build "wr" in two ways: "w" + "r" or "wr".
+// Likewise, if we have ["grb","rb", "gr", "b","r","g"], then we can build "grb" as
+// "g" + "rb", "gr" + "b", "grb", or "g" + "r" + "b". The way to get around this is to
+// start with the shortest building blocks and work our way up. This way, we can be sure that
+// we include any building blocks that can be built in multiple ways
+func prep_map(building_blocks []string) map[string]int {
+	// Sort the available_patterns by length, shortest first
+	// Helps us keep things deterministic
+	slices.SortStableFunc(building_blocks, func(a, b string) int {
+		l_diff := len(a) - len(b)
+		if l_diff != 0 {
+			return l_diff
+		}
+		return strings.Compare(a, b)
+	})
+
+	n_ways := make(map[string]int, len(building_blocks))
+
+	// Fill with the initial values
+	for _, bb := range building_blocks {
+		// If the bb is longer than 1 letter, then check how many ways we can build it
+		if len(bb) > 1 {
+			n_ways[bb] = FindMatches(bb, building_blocks, n_ways)
+		} else {
+			n_ways[bb] = 1
 		}
 	}
-	return sum
+
+	return n_ways
+}
+
+func solve(desired_patterns []string, building_blocks []string) (int, int) {
+
+	// Create a map for keeping track of the number of ways we can build each pattern
+	// This is to avoid recalculating the number of ways to build a pattern
+	n_ways := prep_map(building_blocks)
+
+	p1_sum := 0
+	p2_sum := 0
+	for _, dp := range desired_patterns {
+		n := FindMatches(dp, building_blocks, n_ways)
+		if n > 0 {
+			p1_sum += 1
+			p2_sum += n
+		}
+	}
+	return p1_sum, p2_sum
 }
 
 // The input text of the puzzle
@@ -123,20 +160,14 @@ func main() {
 	building_blocks, desired_patterns := parse_towels(raw_text)
 	parse_time := time.Since(parse_start)
 
-	// === Part 1 ====================================================
+	// === Parts 1 and 2 ==============================================
 	p1_start := time.Now()
-	p1 := part1(desired_patterns, building_blocks)
+	p1, p2 := solve(desired_patterns, building_blocks)
 	p1_time := time.Since(p1_start)
 	fmt.Printf("Part 1: %v\n", p1)
-
-	// === Part 2 ====================================================
-	p2_start := time.Now()
-	// p2 := part2(machines, 101, 103, 100000)
-	p2_time := time.Since(p2_start)
-	// fmt.Printf("Part 2: %v\n", p2)
+	fmt.Printf("Part 2: %v\n", p2)
 
 	// === Print Results ============================================
 	fmt.Printf("\n\nSetup took %v\n", parse_time)
-	fmt.Printf("Part 1 took %v\n", p1_time)
-	fmt.Printf("Part 2 took %v\n", p2_time)
+	fmt.Printf("Parts 1 and 2 took %v\n", p1_time)
 }

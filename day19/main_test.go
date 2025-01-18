@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,29 +17,40 @@ bwurrg
 brgr
 bbrgwb`
 
+func TestPrepMap(t *testing.T) {
+	building_blocks := []string{"r", "wr", "b", "g", "bwu", "rb", "gb", "br"}
+	want := map[string]int{
+		"b":   1,
+		"r":   1,
+		"g":   1,
+		"wr":  1,
+		"rb":  2,
+		"gb":  2,
+		"br":  2,
+		"bwu": 1,
+	}
+	got := prep_map(building_blocks)
+	assert.Equal(t, want, got)
+}
+
 func TestFindMatches(t *testing.T) {
-	available_patterns := []string{"r", "wr", "b", "g", "bwu", "rb", "gb", "br"}
+	building_blocks := []string{"r", "wr", "b", "g", "bwu", "rb", "gb", "br"}
 	tests := []struct {
 		pattern_to_build string
-		want_pattern     []string
-		want_err         error
+		want_count       int
 	}{
-		{"brwrr", []string{"br", "wr", "r"}, nil},
-		{"bggr", []string{"b", "g", "g", "r"}, nil},
-		{"gbbr", []string{"gb", "br"}, nil},
-		{"rrbgbr", []string{"r", "rb", "gb", "r"}, nil},
-		{"ubwu", nil, fmt.Errorf("no match found")},
-		{"bwurrg", []string{"bwu", "r", "r", "g"}, nil},
-		{"brgr", []string{"br", "g", "r"}, nil},
-		{"bbrgwb", nil, fmt.Errorf("no match found")},
+		{"brwrr", 2},
+		{"bggr", 1},
+		{"gbbr", 4},
+		{"rrbgbr", 6},
+		{"ubwu", 0},
+		{"bwurrg", 1},
+		{"brgr", 2},
+		{"bbrgwb", 0},
 	}
 	for _, tc := range tests {
-		got, err := FindMatches(tc.pattern_to_build, available_patterns)
-		assert.Equal(t, tc.want_pattern, got)
-		if tc.want_err != nil {
-			assert.EqualError(t, err, tc.want_err.Error())
-
-		}
+		got := FindMatches(tc.pattern_to_build, building_blocks, make(map[string]int))
+		assert.Equal(t, tc.want_count, got)
 	}
 }
 
@@ -53,16 +63,19 @@ func TestParseTowels(t *testing.T) {
 	assert.Equal(t, want_desired_patterns, desired_patterns)
 }
 
-func TestPart1(t *testing.T) {
+func TestPart1And2(t *testing.T) {
 	building_blocks, desired_patterns := parse_towels(test_input)
-	want := 6
-	got := part1(desired_patterns, building_blocks)
-	assert.Equal(t, want, got)
+	p1_want := 6
+	p2_want := 16
+	p1_got, p2_got := solve(desired_patterns, building_blocks)
+	assert.Equal(t, p1_want, p1_got)
+	assert.Equal(t, p2_want, p2_got)
 }
 
-func TestPart1Real(t *testing.T) {
+func TestPart1And2Real(t *testing.T) {
 	building_blocks, desired_patterns := parse_towels(raw_text)
-	want := 276
-	got := part1(desired_patterns, building_blocks)
-	assert.Equal(t, want, got)
+	p1_want := 276
+	// p2_want
+	p1_got, _ := solve(desired_patterns, building_blocks)
+	assert.Equal(t, p1_want, p1_got)
 }
