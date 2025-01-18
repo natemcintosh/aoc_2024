@@ -29,23 +29,23 @@ func parse_towels(raw string) ([]string, []string) {
 
 var NoMatchFound = fmt.Errorf("no match found")
 
-// inner_find_matches takes in a string and a list of patterns and sees which of the available_patterns
+// inner_find_matches takes in a string and a list of patterns and sees which of the building_blocks
 // fit at the start of rem. Then it recursively calls itself with the remaining string and the
 // remaining patterns.
 //
 // If it find a complete match, it adds that to the count of ways the string can be made
-func inner_find_matches(rem string, available_patterns []string, n_matches int, n_ways map[string]int) int {
+func inner_find_matches(rem string, building_blocks []string, n_matches int, n_ways map[string]int) int {
 	// If we've already calculated the number of ways to build rem, return it
 	if n, ok := n_ways[rem]; ok {
 		return n
 	}
 
-	// Keep track of the number of ways we can build rem
+	// Keep track of the number of ways we can build rem from smaller strings
 	n_ways_rem := 0
 
 	// For each match, run find_matches on the remaining string all the
 	// available_patterns, passing in the ones matched so far
-	for _, m := range available_patterns {
+	for _, m := range building_blocks {
 		// If this is not the start of rem, then continue
 		if !strings.HasPrefix(rem, m) {
 			continue
@@ -61,7 +61,7 @@ func inner_find_matches(rem string, available_patterns []string, n_matches int, 
 		}
 
 		// Call the recursive function
-		new_ways := inner_find_matches(rem[len(m):], available_patterns, n_matches, n_ways)
+		new_ways := inner_find_matches(rem[len(m):], building_blocks, n_matches, n_ways)
 		n_matches += new_ways
 		n_ways_rem += new_ways
 	}
@@ -74,17 +74,12 @@ func inner_find_matches(rem string, available_patterns []string, n_matches int, 
 	return n_matches
 }
 
-// FindMatches takes in a string and a list of patterns and sees which of the available_patterns
-// fit at the start of rem. Then it recursively calls itself with the remaining string and the
-// avilable patterns.
-// If it find a complete match, it adds one to the count of ways the string can be made.
-// If it returns an error, it means no match was found.
-// Keep track of the number of ways we can build any given string, so we don't have to recalculate it
-// multiple times
-func FindMatches(to_create string, available_patterns []string, n_ways map[string]int) int {
+// FindMatches takes in a string and a list of patterns and sees which of the building_blocks
+// can be used to build the string. It does this by calling inner_find_matches recursively.
+func FindMatches(to_create string, building_blocks []string, n_ways map[string]int) int {
 	// Filter available_patterns down to only those that are contained in to_create
-	ap := make([]string, 0, len(available_patterns))
-	for _, p := range available_patterns {
+	ap := make([]string, 0, len(building_blocks))
+	for _, p := range building_blocks {
 		if strings.Contains(to_create, p) {
 			ap = append(ap, p)
 		}
@@ -101,13 +96,12 @@ func FindMatches(to_create string, available_patterns []string, n_ways map[strin
 // prep_map prepares the map of how many ways we can build each pattern. Critically, it
 // also checks for any cases where a building block can be built in multiple ways. E.g.
 // if we have building blocks ["wr", "w", "r"], then we can build "wr" in two ways: "w" + "r" or "wr".
-// Likewise, if we have ["grb","rb", "gr", "b","r","g"], then we can build "grb" as
-// "g" + "rb", "gr" + "b", "grb", or "g" + "r" + "b". The way to get around this is to
+// Likewise, if we have ["grb", "rb", "gr", "b","r","g"], then we can build "grb" as
+// "g" + "rb", "gr" + "b", "grb", or "g" + "r" + "b". The way to deal with this is to
 // start with the shortest building blocks and work our way up. This way, we can be sure that
 // we include any building blocks that can be built in multiple ways
 func prep_map(building_blocks []string) map[string]int {
 	// Sort the available_patterns by length, shortest first
-	// Helps us keep things deterministic
 	slices.SortStableFunc(building_blocks, func(a, b string) int {
 		l_diff := len(a) - len(b)
 		if l_diff != 0 {
