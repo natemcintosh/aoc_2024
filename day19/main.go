@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 	"time"
@@ -78,19 +79,19 @@ func inner_find_matches(rem string, building_blocks []string, n_matches int, n_w
 // can be used to build the string. It does this by calling inner_find_matches recursively.
 func FindMatches(to_create string, building_blocks []string, n_ways map[string]int) int {
 	// Filter available_patterns down to only those that are contained in to_create
-	ap := make([]string, 0, len(building_blocks))
+	bb := make([]string, 0, len(building_blocks))
 	for _, p := range building_blocks {
 		if strings.Contains(to_create, p) {
-			ap = append(ap, p)
+			bb = append(bb, p)
 		}
 	}
 
-	// If ap is empty, return 0
-	if len(ap) == 0 {
+	// If bb is empty, return 0
+	if len(bb) == 0 {
 		return 0
 	}
-
-	return inner_find_matches(to_create, ap, 0, n_ways)
+	inner_find_matches(to_create, bb, 0, n_ways)
+	return n_ways[to_create]
 }
 
 // prep_map prepares the map of how many ways we can build each pattern. Critically, it
@@ -139,6 +140,11 @@ func solve(desired_patterns []string, building_blocks []string) (int, int) {
 			p1_sum += 1
 			p2_sum += n
 		}
+	}
+	// Try summing all the values in n_ways
+	p2_v2 := 0
+	for v := range maps.Values(n_ways) {
+		p2_v2 += v
 	}
 	return p1_sum, p2_sum
 }
