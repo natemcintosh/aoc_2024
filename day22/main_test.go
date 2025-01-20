@@ -64,8 +64,52 @@ func BenchmarkStepN(b *testing.B) {
 	}
 }
 
+func BenchmarkPart1(b *testing.B) {
+	nums := parse(raw_text)
+	for i := 0; i < b.N; i++ {
+		part1(nums)
+	}
+}
+
 func TestPart1(t *testing.T) {
 	want := 37327623
 	got := part1([]int{1, 10, 100, 2024})
+	assert.Equal(t, want, got)
+}
+
+func TestPart1Real(t *testing.T) {
+	nums := parse(raw_text)
+	want := 14622549304
+	got := part1(nums)
+	assert.Equal(t, want, got)
+}
+
+func TestTrackChanges(t *testing.T) {
+	secret := 123
+	changes := track_all_changes_for_seller(secret, 10)
+	want := map[[4]int]int{
+		{-3, 6, -1, -1}: 4, {6, -1, -1, 0}: 4,
+		{-1, -1, 0, 2}: 6, {-1, 0, 2, -2}: 4,
+		{0, 2, -2, 0}: 4, {2, -2, 0, -2}: 2,
+	}
+	assert.Equal(t, want, changes)
+}
+
+func TestNewChangeTracker(t *testing.T) {
+	want := ChangeTracker{[2]int{3, 0}, [4]int{0, 0, 0, -3}}
+	got := NewChangeTracker([2]int{3, 0})
+	assert.Equal(t, want, got)
+}
+
+func TestPart2(t *testing.T) {
+	want := 23
+	got := part2([]int{1, 2, 3, 2024})
+	assert.Equal(t, want, got)
+}
+
+func TestPart2Real(t *testing.T) {
+	nums := parse(raw_text)
+	want := 1735
+	got := part2(nums)
 	assert.Equal(t, want, got)
 }

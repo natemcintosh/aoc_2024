@@ -34,6 +34,11 @@ func prune(secret int) int {
 	return secret % 16777216
 }
 
+// ones_place returns the ones place of the given number
+func ones_place(secret int) int {
+	return secret % 10
+}
+
 // step follows these three steps to get the next pseudorandom number:
 //  1. Calculate the result of multiplying the secret number by 64. Then, mix this result
 //     into the secret number. Finally, prune the secret number.
@@ -55,6 +60,69 @@ func step(secret int) int {
 	return secret
 }
 
+// ChangeTracker keeps track of the differences of 5 values. However, we only need the
+// i and (i - 1) values, and then we can keep track of the 4 sets of differences.
+//
+// It is not suggested to create this struct directly. Instead, always use NewChangeTracker
+type ChangeTracker struct {
+	// The values. New values move "in from the right", and old values move "out to the left"
+	vals [2]int
+
+	// Shift all the values to the left, and make the new right-most item
+	// diffs[3] = vals[1] - vals[0]
+	diffs [4]int
+}
+
+func NewChangeTracker(vals [2]int) ChangeTracker {
+	diffs := [4]int{0, 0, 0, vals[1] - vals[0]}
+	return ChangeTracker{vals, diffs}
+}
+
+// Push will add a new value to the end of the list, and remove the first element. It
+// will also update the differences.
+func (ct *ChangeTracker) Push(value int) {
+	ct.vals[0] = ct.vals[1]
+	ct.vals[1] = value
+
+	ct.diffs[0] = ct.diffs[1]
+	ct.diffs[1] = ct.diffs[2]
+	ct.diffs[2] = ct.diffs[3]
+	ct.diffs[3] = ct.vals[1] - ct.vals[0]
+}
+
+// track_all_changes_for_seller will go through 2000 steps for a seller's starting
+// number, and keep track of the most recent 4 changes in ones place value of the secret
+// number. For set of 4 changes, it will store the value of the ones place. If a set
+// of 4 changes has already been seen, it will ignore this value.
+// If a set of 4 changes has not been seen, it will store the value of the ones place.
+//
+// Finally, it will return a map of the values of the ones place for each set of 4 changes
+func track_all_changes_for_seller(secret, n_steps int) map[[4]int]int {
+	changes := make(map[[4]int]int, n_steps)
+	ct := NewChangeTracker([2]int{ones_place(secret), ones_place(step(secret))})
+	secret = step_n(secret, 2)
+
+	for idx := 2; idx < n_steps; idx++ {
+		// Get the ones place of the secret number
+		ones := ones_place(secret)
+
+		// Add the ones place to the change tracker
+		ct.Push(ones)
+
+		// If the diffs have been filled with at least 4 values, then start checking
+		if idx >= 4 {
+			if _, ok := changes[ct.diffs]; !ok {
+				changes[ct.diffs] = ones
+			}
+		}
+
+		// Step the secret number
+		secret = step(secret)
+	}
+	return changes
+}
+
+// step_n repeats the step function n times
 func step_n(secret int, n int) int {
 	for i := 0; i < n; i++ {
 		secret = step(secret)
@@ -69,6 +137,38 @@ func part1(secrets []int) int {
 		sum += step_n(secret, 2000)
 	}
 	return sum
+}
+
+// merge_maps will merge two maps together, summing the values of any duplicate keys.
+// Note that this will modify the first map in place.
+func merge_maps(m1, m2 map[[4]int]int) map[[4]int]int {
+	for k, v := range m2 {
+		if existingValue, exists := m1[k]; exists {
+			m1[k] = existingValue + v
+		} else {
+			m1[k] = v
+		}
+	}
+	return m1
+}
+
+func part2(secrets []int) int {
+	// Track all the changes for each secret number
+	changes := make(map[[4]int]int)
+
+	for _, secret := range secrets {
+		changes = merge_maps(changes, track_all_changes_for_seller(secret, 2000))
+	}
+
+	// Return the max value found
+	max_val := 0
+	for _, val := range changes {
+		if val > max_val {
+			max_val = val
+		}
+	}
+
+	return max_val
 }
 
 // The input text of the puzzle
@@ -90,9 +190,9 @@ func main() {
 
 	// === Part 2 ====================================================
 	p2_start := time.Now()
-	// p2 := part2(secret_numbers)
+	p2 := part2(secret_numbers)
 	p2_time := time.Since(p2_start)
-	// fmt.Printf("Part 2: %v\n", p2)
+	fmt.Printf("Part 2: %v\n", p2)
 
 	// === Print Results ============================================
 	fmt.Printf("\n\nSetup took %v\n", parse_time)
