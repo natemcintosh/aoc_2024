@@ -86,7 +86,9 @@ func TestPart1Real(t *testing.T) {
 
 func TestTrackChanges(t *testing.T) {
 	secret := 123
-	changes := track_all_changes_for_seller(secret, 10)
+	changes2 := make(map[[4]int]int)
+	changes := track_all_changes_for_seller(secret, 10, changes2)
+
 	want := map[[4]int]int{
 		{-3, 6, -1, -1}: 4, {6, -1, -1, 0}: 4,
 		{-1, -1, 0, 2}: 6, {-1, 0, 2, -2}: 4,
@@ -112,4 +114,11 @@ func TestPart2Real(t *testing.T) {
 	want := 1735
 	got := part2(nums)
 	assert.Equal(t, want, got)
+}
+
+func BenchmarkPart2(b *testing.B) {
+	nums := parse(raw_text)
+	for i := 0; i < b.N; i++ {
+		part2(nums)
+	}
 }

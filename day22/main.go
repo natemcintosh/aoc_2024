@@ -97,8 +97,9 @@ func (ct *ChangeTracker) Push(value int) {
 // If a set of 4 changes has not been seen, it will store the value of the ones place.
 //
 // Finally, it will return a map of the values of the ones place for each set of 4 changes
-func track_all_changes_for_seller(secret, n_steps int) map[[4]int]int {
-	changes := make(map[[4]int]int, n_steps)
+func track_all_changes_for_seller(secret, n_steps int, changes map[[4]int]int) map[[4]int]int {
+	// We re-use the allocations in changes to avoid allocations. So clear the values here
+	clear(changes)
 	ct := NewChangeTracker([2]int{ones_place(secret), ones_place(step(secret))})
 	secret = step_n(secret, 2)
 
@@ -154,10 +155,14 @@ func merge_maps(m1, m2 map[[4]int]int) map[[4]int]int {
 
 func part2(secrets []int) int {
 	// Track all the changes for each secret number
-	changes := make(map[[4]int]int)
+	changes := make(map[[4]int]int, len(secrets))
+	changes2 := make(map[[4]int]int, len(secrets))
 
 	for _, secret := range secrets {
-		changes = merge_maps(changes, track_all_changes_for_seller(secret, 2000))
+		changes = merge_maps(
+			changes,
+			track_all_changes_for_seller(secret, 2000, changes2),
+		)
 	}
 
 	// Return the max value found
