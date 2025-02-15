@@ -6,6 +6,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const test_input = `kh-tc
+qp-kh
+de-cg
+ka-co
+yn-aq
+qp-ub
+cg-tb
+vc-aq
+tb-ka
+wh-tc
+yn-cg
+kh-ub
+ta-co
+de-co
+tc-td
+tb-wq
+wh-td
+ta-ka
+td-qp
+aq-cg
+wq-ub
+ub-vc
+de-ta
+wq-aq
+wq-vc
+wh-yn
+ka-de
+kh-ta
+co-tc
+wh-qp
+tb-vc
+td-yn`
+
 func TestNewNode(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -27,7 +60,7 @@ func TestNewNode(t *testing.T) {
 }
 
 func BenchmarkNewNode(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		NewNode("ab")
 	}
 }
@@ -47,4 +80,19 @@ zs-cd`
 		}}
 	got := parse(input)
 	assert.Equal(t, want, got)
+}
+
+func BenchmarkParse(b *testing.B) {
+	input := `ab-cd
+zs-cd`
+	for b.Loop() {
+		parse(input)
+	}
+}
+
+func BenchmarkHasEdge(b *testing.B) {
+	g := parse(test_input)
+	for b.Loop() {
+		g.HasEdge(Node{'a', 'b'}, Node{'c', 'd'})
+	}
 }

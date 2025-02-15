@@ -59,14 +59,14 @@ func TestStepN(t *testing.T) {
 }
 
 func BenchmarkStepN(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		step_n(2024, 2000)
 	}
 }
 
 func BenchmarkPart1(b *testing.B) {
 	nums := parse(raw_text)
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		part1(nums)
 	}
 }
@@ -118,7 +118,7 @@ func TestPart2Real(t *testing.T) {
 
 func BenchmarkPart2(b *testing.B) {
 	nums := parse(raw_text)
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		part2(nums)
 	}
 }
