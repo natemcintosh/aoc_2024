@@ -3,6 +3,8 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 	"time"
 )
@@ -15,7 +17,7 @@ var BadNodeInput = fmt.Errorf("Could not produce a Node\n")
 func (n Node) Format(f fmt.State, c rune) {
 	switch c {
 	case 'v': // default format
-		fmt.Fprintf(f, "Node(%c%c)", n[0], n[1])
+		fmt.Fprintf(f, "%c%c", n[0], n[1])
 	case 's': // string format
 		fmt.Fprintf(f, "%c%c", n[0], n[1])
 	case 'q': // quoted string format
@@ -28,7 +30,7 @@ func (n Node) Format(f fmt.State, c rune) {
 // NewNode takes a string that must be exactly two letters, and reates a Node
 func NewNode(s string) (Node, error) {
 	if len(s) != 2 {
-		fmt.Printf("s: %v\n", s)
+		// fmt.Printf("Tried to parse into Node but failed: %v\n", s)
 		return Node{}, BadNodeInput
 	}
 	var n Node
@@ -63,7 +65,7 @@ func parse(raw_text string) Graph {
 	// Create the empty graph
 	g := Graph{make(map[[2]Node]struct{}), make(map[Node]struct{})}
 	// For each line, for each pair of letters, add an edge to the graph
-	lines := strings.Split(raw_text, "\n")
+	lines := strings.Split(strings.TrimSpace(raw_text), "\n")
 	for _, line := range lines {
 		// Split around the "-"
 		parts := strings.Split(line, "-")
@@ -110,6 +112,78 @@ func (g Graph) HasEdge(n1, n2 Node) bool {
 	return ok
 }
 
+// compare_nodes compares two nodes. Compare by comparing the first rune, then the
+// second. A rune with a lower value is considered "less" than a rune with a higher value.
+func compare_nodes(a, b Node) int {
+	if a[0] < b[0] {
+		return -1
+	}
+	if a[0] > b[0] {
+		return 1
+	}
+	if a[1] < b[1] {
+		return -1
+	}
+	if a[1] > b[1] {
+		return 1
+	}
+	return 0
+}
+
+// compare_edges compares two edges. Compare by comparing the first node, then the
+// second. A node with a lower value is considered "less" than a node with a higher value.
+func compare_edges(a, b [2]Node) int {
+	if compare_nodes(a[0], b[0]) == 0 {
+		return compare_nodes(a[1], b[1])
+	}
+	return compare_nodes(a[0], b[0])
+}
+
+func part1(g Graph) int {
+	// Get a sorted slice of all the edges for easy, deterministic iteration
+	sorted_edges := slices.SortedFunc(maps.Keys(g.Edges), compare_edges)
+
+	triplets := make(map[[3]Node]struct{})
+
+	// For each edge, go forward in the list, and check for a common edge between the two nodes
+	for idx, e1 := range sorted_edges {
+		// If neither node starts with `t`, then continue
+		if e1[0][0] != 't' && e1[1][0] != 't' {
+			continue
+		}
+
+		for _, e2 := range sorted_edges[idx:] {
+			// Check if either node in e1 matches either node in e2
+			var e3 [2]Node
+			if e1[0] == e2[0] {
+				e3 = CreateEdge(e1[1], e2[1])
+			} else if e1[0] == e2[1] {
+				e3 = CreateEdge(e1[1], e2[0])
+			} else if e1[1] == e2[0] {
+				e3 = CreateEdge(e1[0], e2[1])
+			} else if e1[1] == e2[1] {
+				e3 = CreateEdge(e1[0], e2[0])
+			} else {
+				continue
+			}
+
+			// If so, check if the graph has a node made up of the other two nodes not
+			// yet checked
+			if !(g.HasEdge(e3[0], e3[1])) {
+				continue
+			}
+
+			// If so, sort the nodes, and put them in triplets
+			nodes := []Node{e1[0], e1[1], e2[0], e2[1], e3[0], e3[1]}
+			slices.SortFunc(nodes, compare_nodes)
+			nodes = slices.Compact(nodes)
+			triplets[[3]Node{nodes[0], nodes[1], nodes[2]}] = struct{}{}
+		}
+	}
+
+	return len(triplets)
+}
+
 // The input text of the puzzle
 //
 //go:embed input.txt
@@ -118,14 +192,14 @@ var raw_text string
 func main() {
 	// === Parse Input ===============================================
 	parse_start := time.Now()
-	// secret_numbers := parse(raw_text)
+	graph := parse(raw_text)
 	parse_time := time.Since(parse_start)
 
 	// === Part 1 ====================================================
 	p1_start := time.Now()
-	// p1 := part1(secret_numbers)
+	p1 := part1(graph)
 	p1_time := time.Since(p1_start)
-	// fmt.Printf("Part 1: %v\n", p1)
+	fmt.Printf("Part 1: %v\n", p1)
 
 	// === Part 2 ====================================================
 	p2_start := time.Now()

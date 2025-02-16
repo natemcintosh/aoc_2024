@@ -96,3 +96,37 @@ func BenchmarkHasEdge(b *testing.B) {
 		g.HasEdge(Node{'a', 'b'}, Node{'c', 'd'})
 	}
 }
+
+func TestCompareNodes(t *testing.T) {
+	tests := []struct {
+		a, b Node
+		want int
+	}{
+		{Node{'a', 'b'}, Node{'a', 'b'}, 0},
+		{Node{'b', 'd'}, Node{'b', 'd'}, 0},
+		{Node{'a', 'b'}, Node{'b', 'a'}, -1},
+		{Node{'a', 'b'}, Node{'a', 'c'}, -1},
+		{Node{'a', 'b'}, Node{'c', 'd'}, -1},
+		{Node{'a', 'b'}, Node{'b', 'c'}, -1},
+		{Node{'a', 'c'}, Node{'a', 'b'}, 1},
+		{Node{'b', 'a'}, Node{'a', 'a'}, 1},
+	}
+	for _, tc := range tests {
+		got := compare_nodes(tc.a, tc.b)
+		assert.Equal(t, tc.want, got)
+	}
+}
+
+func TestPart1(t *testing.T) {
+	g := parse(test_input)
+	want := 7
+	got := part1(g)
+	assert.Equal(t, want, got)
+}
+
+func TestPart1Real(t *testing.T) {
+	g := parse(raw_text)
+	got := part1(g)
+	want := 1411
+	assert.Equal(t, want, got)
+}
