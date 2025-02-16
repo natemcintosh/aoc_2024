@@ -73,10 +73,10 @@ zs-cd`
 			{Node{'a', 'b'}, Node{'c', 'd'}}: {},
 			{Node{'c', 'd'}, Node{'z', 's'}}: {},
 		},
-		Nodes: map[Node]struct{}{
-			{'a', 'b'}: {},
-			{'c', 'd'}: {},
-			{'z', 's'}: {},
+		Nodes: map[Node]int{
+			{'a', 'b'}: 1,
+			{'c', 'd'}: 2,
+			{'z', 's'}: 1,
 		}}
 	got := parse(input)
 	assert.Equal(t, want, got)
@@ -128,5 +128,60 @@ func TestPart1Real(t *testing.T) {
 	g := parse(raw_text)
 	got := part1(g)
 	want := 1411
+	assert.Equal(t, want, got)
+}
+
+func BenchmarkPart1(b *testing.B) {
+	benchmarks := []struct {
+		name  string
+		graph Graph
+	}{
+		{"test", parse(test_input)},
+		{"real", parse(raw_text)},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			for b.Loop() {
+				part1(bm.graph)
+			}
+		})
+	}
+}
+
+func TestAddIfPossible(t *testing.T) {
+	g := parse(`ka-co
+ta-co
+de-co
+ta-ka
+de-ta
+ka-de`)
+	tests := []struct {
+		name string
+		fc   FullyConnected
+		n    Node
+		want bool
+	}{
+		{"first", FullyConnected{[]Node{{'k', 'a'}}}, Node{'c', 'o'}, true},
+		{"second", FullyConnected{[]Node{{'k', 'a'}, {'c', 'o'}}}, Node{'t', 'a'}, true},
+		{"third", FullyConnected{[]Node{{'k', 'a'}, {'c', 'o'}}}, Node{'z', 'z'}, false},
+		{"fourth", FullyConnected{[]Node{{'k', 'a'}, {'c', 'o'}, {'t', 'a'}}}, Node{'d', 'e'}, true},
+	}
+
+	for _, tc := range tests {
+		got := tc.fc.AddIfPossible(tc.n, g)
+		assert.Equal(t, tc.want, got)
+
+		// Make sure that the node was added to the FCG
+		if tc.want {
+			assert.Contains(t, tc.fc.Nodes, tc.n)
+		}
+	}
+}
+
+func TestPart2(t *testing.T) {
+	g := parse(test_input)
+	want := "co,de,ka,ta"
+	got := part2(g)
 	assert.Equal(t, want, got)
 }

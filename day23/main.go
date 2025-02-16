@@ -41,10 +41,11 @@ func NewNode(s string) (Node, error) {
 	return n, nil
 }
 
-// Graph is an undirected graph. It stores both the nodes, and the edges between nodes
+// Graph is an undirected graph. It stores both the nodes, and the edges between nodes.
+// Note that the Nodes map also stores the number of neighbors that node has.
 type Graph struct {
 	Edges map[[2]Node]struct{}
-	Nodes map[Node]struct{}
+	Nodes map[Node]int
 }
 
 func (g Graph) Format(f fmt.State, c rune) {
@@ -63,7 +64,7 @@ func (g Graph) Format(f fmt.State, c rune) {
 // parse takes the input text and parses it into a graph
 func parse(raw_text string) Graph {
 	// Create the empty graph
-	g := Graph{make(map[[2]Node]struct{}), make(map[Node]struct{})}
+	g := Graph{make(map[[2]Node]struct{}), make(map[Node]int)}
 	// For each line, for each pair of letters, add an edge to the graph
 	lines := strings.Split(strings.TrimSpace(raw_text), "\n")
 	for _, line := range lines {
@@ -89,8 +90,8 @@ func parse(raw_text string) Graph {
 		g.Edges[edge] = struct{}{}
 
 		// Add the nodes to the graph
-		g.Nodes[n1] = struct{}{}
-		g.Nodes[n2] = struct{}{}
+		g.Nodes[n1] += 1
+		g.Nodes[n2] += 1
 
 	}
 	return g
@@ -182,6 +183,69 @@ func part1(g Graph) int {
 	}
 
 	return len(triplets)
+}
+
+// FullyConnected is a set of nodes that are all connected to each other.
+type FullyConnected struct {
+	Nodes []Node
+}
+
+// AddIfPossible will see if `n` is connected to all the nodes in `g.Nodes`. It will append
+// `n` to `g.Nodes` if `n` is connected to all the nodes and return `true`. Otherwise,
+// it'll return false
+func (fc *FullyConnected) AddIfPossible(n Node, g Graph) bool {
+	for _, gn := range fc.Nodes {
+		if !g.HasEdge(gn, n) {
+			return false
+		}
+	}
+
+	// `n` is connected to all other nodes. Add it to the fully connected set
+	fc.Nodes = append(fc.Nodes, n)
+	return true
+}
+
+func part2(g Graph) string {
+	// Create a pool of fully connected sub-graphs
+	fcg_pool := make([]FullyConnected, 0, len(g.Nodes))
+
+	// Iterate over the nodes
+	for n := range g.Nodes {
+		// Attempt to add it to all existing FCGs
+		for _, fcg := range fcg_pool {
+			fmt.Printf("fcg before: %+v\n", fcg.Nodes)
+			fcg.AddIfPossible(n, g)
+			fmt.Printf("fcg after: %+v\n", fcg.Nodes)
+		}
+
+		// Add a new FCG that has just this one.
+		fcg_pool = append(fcg_pool, FullyConnected{[]Node{n}})
+	}
+	fmt.Println(fcg_pool)
+
+	// Sort the fully connected graphs by how many nodes they have, most first
+	slices.SortFunc(fcg_pool, func(a, b FullyConnected) int {
+		if len(a.Nodes) > len(b.Nodes) {
+			return -1
+		} else if len(a.Nodes) < len(b.Nodes) {
+			return 1
+		}
+		return 0
+	})
+
+	// Get the nodes in the largest FCG
+	biggest_fcg := fcg_pool[0].Nodes
+	slices.SortFunc(biggest_fcg, compare_nodes)
+
+	// Get all the nodes, and join them
+	var res strings.Builder
+	for _, n := range biggest_fcg {
+		res.WriteRune(n[0])
+		res.WriteRune(n[1])
+		res.WriteRune(',')
+	}
+
+	return res.String()
 }
 
 // The input text of the puzzle
