@@ -201,7 +201,7 @@ func (fc *FullyConnected) AddIfPossible(n Node, g Graph) bool {
 	}
 
 	// `n` is connected to all other nodes. Add it to the fully connected set
-	fc.Nodes = append(fc.Nodes, n)
+	// fc.Nodes = append(fc.Nodes, n)
 	return true
 }
 
@@ -212,16 +212,16 @@ func part2(g Graph) string {
 	// Iterate over the nodes
 	for n := range g.Nodes {
 		// Attempt to add it to all existing FCGs
-		for _, fcg := range fcg_pool {
-			fmt.Printf("fcg before: %+v\n", fcg.Nodes)
-			fcg.AddIfPossible(n, g)
-			fmt.Printf("fcg after: %+v\n", fcg.Nodes)
+		for idx, fcg := range fcg_pool {
+			can_add := fcg.AddIfPossible(n, g)
+			if can_add {
+				fcg_pool[idx].Nodes = append(fcg_pool[idx].Nodes, n)
+			}
 		}
 
 		// Add a new FCG that has just this one.
 		fcg_pool = append(fcg_pool, FullyConnected{[]Node{n}})
 	}
-	fmt.Println(fcg_pool)
 
 	// Sort the fully connected graphs by how many nodes they have, most first
 	slices.SortFunc(fcg_pool, func(a, b FullyConnected) int {
@@ -239,10 +239,12 @@ func part2(g Graph) string {
 
 	// Get all the nodes, and join them
 	var res strings.Builder
-	for _, n := range biggest_fcg {
+	for idx, n := range biggest_fcg {
 		res.WriteRune(n[0])
 		res.WriteRune(n[1])
-		res.WriteRune(',')
+		if idx < len(biggest_fcg)-1 {
+			res.WriteRune(',')
+		}
 	}
 
 	return res.String()
@@ -267,9 +269,9 @@ func main() {
 
 	// === Part 2 ====================================================
 	p2_start := time.Now()
-	// p2 := part2(secret_numbers)
+	p2 := part2(graph)
 	p2_time := time.Since(p2_start)
-	// fmt.Printf("Part 2: %v\n", p2)
+	fmt.Printf("Part 2: %v\n", p2)
 
 	// === Print Results ============================================
 	fmt.Printf("\n\nSetup took %v\n", parse_time)

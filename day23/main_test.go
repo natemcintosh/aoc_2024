@@ -171,11 +171,6 @@ ka-de`)
 	for _, tc := range tests {
 		got := tc.fc.AddIfPossible(tc.n, g)
 		assert.Equal(t, tc.want, got)
-
-		// Make sure that the node was added to the FCG
-		if tc.want {
-			assert.Contains(t, tc.fc.Nodes, tc.n)
-		}
 	}
 }
 
