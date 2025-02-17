@@ -176,7 +176,7 @@ func part1(g Graph) int {
 
 			// If so, sort the nodes, and put them in triplets
 			nodes := []Node{e1[0], e1[1], e2[0], e2[1], e3[0], e3[1]}
-			slices.SortFunc(nodes, compare_nodes)
+			slices.SortStableFunc(nodes, compare_nodes)
 			nodes = slices.Compact(nodes)
 			triplets[[3]Node{nodes[0], nodes[1], nodes[2]}] = struct{}{}
 		}
@@ -190,18 +190,14 @@ type FullyConnected struct {
 	Nodes []Node
 }
 
-// AddIfPossible will see if `n` is connected to all the nodes in `g.Nodes`. It will append
-// `n` to `g.Nodes` if `n` is connected to all the nodes and return `true`. Otherwise,
-// it'll return false
+// AddIfPossible will see if `n` is connected to all the nodes in `g.Nodes`. If `n` is
+// connected to all the nodes, it will return true, else false.
 func (fc *FullyConnected) AddIfPossible(n Node, g Graph) bool {
 	for _, gn := range fc.Nodes {
 		if !g.HasEdge(gn, n) {
 			return false
 		}
 	}
-
-	// `n` is connected to all other nodes. Add it to the fully connected set
-	// fc.Nodes = append(fc.Nodes, n)
 	return true
 }
 
@@ -224,7 +220,7 @@ func part2(g Graph) string {
 	}
 
 	// Sort the fully connected graphs by how many nodes they have, most first
-	slices.SortFunc(fcg_pool, func(a, b FullyConnected) int {
+	slices.SortStableFunc(fcg_pool, func(a, b FullyConnected) int {
 		if len(a.Nodes) > len(b.Nodes) {
 			return -1
 		} else if len(a.Nodes) < len(b.Nodes) {
@@ -235,7 +231,7 @@ func part2(g Graph) string {
 
 	// Get the nodes in the largest FCG
 	biggest_fcg := fcg_pool[0].Nodes
-	slices.SortFunc(biggest_fcg, compare_nodes)
+	slices.SortStableFunc(biggest_fcg, compare_nodes)
 
 	// Get all the nodes, and join them
 	var res strings.Builder
