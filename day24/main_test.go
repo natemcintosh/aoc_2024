@@ -130,3 +130,43 @@ func TestTopoSort(t *testing.T) {
 	}
 	assert.Equal(t, want, got)
 }
+
+// TestTopoSortCycle tests a graph with a cycle. It should return an
+// error and an empty slice.
+func TestTopoSortCycle(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+	c := NewWire("CCC")
+	d := NewWire("DDD")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, c)
+	g.AddEdge(c, d)
+	g.AddEdge(d, c)
+
+	got, err := g.TopoSort()
+	if err == nil {
+		t.Fatal("Did not find a cycle when should have")
+	}
+	assert.Equal(t, []Wire{}, got)
+}
+
+// TestTopoSortAB tests a graph that has no incoming
+func TestTopoSortAB(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, a)
+
+	want := []Wire{}
+	got, err := g.TopoSort()
+	if err == nil {
+		t.Fatal("should have found that no nodes have no incoming edges")
+	}
+	assert.Equal(t, want, got)
+}

@@ -144,7 +144,7 @@ func (g *DiGraph) TopoSort() ([]Wire, error) {
 
 	// If nothing in S, then fail
 	if len(S) == 0 {
-		return nil, fmt.Errorf("no nodes with no incoming edges")
+		return []Wire{}, fmt.Errorf("no nodes with no incoming edges")
 	}
 
 	// While S is not empty, remove a node from S and add it to L
@@ -172,7 +172,7 @@ func (g *DiGraph) TopoSort() ([]Wire, error) {
 
 	// If the graph still has edges, there there is at least one cycle in the graph
 	if g.HasEdges() {
-		return nil, fmt.Errorf("graph has edges")
+		return []Wire{}, fmt.Errorf("graph has edges")
 	}
 
 	return L, nil
