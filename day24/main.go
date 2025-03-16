@@ -172,7 +172,7 @@ func (g *DiGraph) TopoSort() ([]Wire, error) {
 
 	// If the graph still has edges, there there is at least one cycle in the graph
 	if g.HasEdges() {
-		return []Wire{}, fmt.Errorf("graph has edges")
+		return []Wire{}, fmt.Errorf("There is a cycle in the graph.")
 	}
 
 	return L, nil
@@ -228,6 +228,21 @@ func NewGate(s string) Gate {
 		NewWire(parts[2]),
 		NewWire(parts[4]),
 		NewOp(parts[1]),
+	}
+}
+
+// Calc takes two input values, calcultes the output of the gate, and returns the
+// output value.
+func (g Gate) Calc(in1, in2 bool) bool {
+	switch g.op {
+	case AND:
+		return in1 && in2
+	case OR:
+		return in1 || in2
+	case XOR:
+		return in1 != in2
+	default:
+		panic("Invalid operation")
 	}
 }
 

@@ -170,3 +170,119 @@ func TestTopoSortAB(t *testing.T) {
 	}
 	assert.Equal(t, want, got)
 }
+
+// TestTopoSortLine tests a graph where there is a single path from start to end
+// A -> B -> C -> D
+func TestTopoSortLine(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+	c := NewWire("CCC")
+	d := NewWire("DDD")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, c)
+	g.AddEdge(c, d)
+
+	want := []Wire{a, b, c, d}
+	got, err := g.TopoSort()
+	if err != nil {
+		t.Fatal("Found a cycle when should not have")
+	}
+	assert.Equal(t, want, got)
+}
+
+// TestTopoSortAlmostCircle tests a graph that is almost a circle, except for one edge
+// going the wrong way. A -> B -> C -> D, and A -> D
+func TestTopoSortAlmostCircle(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+	c := NewWire("CCC")
+	d := NewWire("DDD")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, c)
+	g.AddEdge(c, d)
+	g.AddEdge(a, d)
+
+	want := []Wire{a, b, c, d}
+	got, err := g.TopoSort()
+	if err != nil {
+		t.Fatal("Found a cycle when should not have")
+	}
+	assert.Equal(t, want, got)
+}
+
+// TestTopoSortCircle tests a graph that is a circle, A -> B -> C -> D -> A
+// This should return an error and an empty slice.
+func TestTopoSortCircle(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+	c := NewWire("CCC")
+	d := NewWire("DDD")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, c)
+	g.AddEdge(c, d)
+	g.AddEdge(d, a)
+
+	want := []Wire{}
+	got, err := g.TopoSort()
+	if err == nil {
+		t.Fatal("should have found that there is a cycle")
+	}
+	assert.Equal(t, want, got)
+}
+
+// TestTopoSortInnerAlmostCircle tests a graph that has a circle in the middle, A -> B ->
+// C -> D, and B -> D
+// This should return an error and an empty slice.
+func TestTopoSortInnerAlmostCircle(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+	c := NewWire("CCC")
+	d := NewWire("DDD")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, c)
+	g.AddEdge(c, d)
+	g.AddEdge(b, d)
+
+	want := []Wire{a, b, c, d}
+	got, err := g.TopoSort()
+	if err != nil {
+		t.Fatal("Found a cycle when should not have")
+	}
+	assert.Equal(t, want, got)
+}
+
+// TestTopoSortInnerCircle tests a graph that has a circle in the middle, A -> B ->
+// C -> D, and D -> B
+// This should return an error and an empty slice.
+func TestTopoSortInnerCircle(t *testing.T) {
+	a := NewWire("AAA")
+	b := NewWire("BBB")
+	c := NewWire("CCC")
+	d := NewWire("DDD")
+
+	// Create and populate the graph
+	g := NewDiGraph()
+	g.AddEdge(a, b)
+	g.AddEdge(b, c)
+	g.AddEdge(c, d)
+	g.AddEdge(d, b)
+
+	want := []Wire{}
+	got, err := g.TopoSort()
+	if err == nil {
+		t.Fatal("should have found that there is a cycle")
+	}
+	assert.Equal(t, want, got)
+}
