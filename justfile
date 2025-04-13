@@ -14,12 +14,21 @@ test-day day:
     let formatted_day = if ($sday | str length) == 1 { ['0', $sday] | str join } else { $sday }
     print $"Running tests for day ($formatted_day)"
     go test -v $"./day($formatted_day)"
+    if {{ day }} == 24 {
+        print "Running circuit tests..."
+        go test -v ./generators
+    }
 
 alias rd := run-day
 
 # Run a specific day
 run-day day:
     #!{{ home_directory() }}/.cargo/bin/nu
+    # If this is day 24, first compile the circuit
+    if {{ day }} == 24 {
+        print "Compiling circuit..."
+        go run generators/generator.go
+    }
     let sday = ({{ day }} | into string)
     let formatted_day = if ($sday | str length) == 1 { ['0', $sday] | str join } else { $sday }
     go run $"./day($formatted_day)/main.go"

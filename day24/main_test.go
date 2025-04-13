@@ -7,28 +7,28 @@ import (
 )
 
 // FuzzNameFromID is a fuzz test that validates encoding and decoding of an ID.
-// func FuzzNameFromID(f *testing.F) {
-// 	// Seed with some valid 3-character ASCII strings.
-// 	for r1 := rune(32); r1 < 127; r1++ {
-// 		f.Add(r1, r1+1, r1+2)
-// 	}
+func FuzzNameFromID(f *testing.F) {
+	// Seed with some valid 3-character ASCII strings.
+	for r1 := rune(32); r1 < 127; r1++ {
+		f.Add(r1, r1+1, r1+2)
+	}
 
-// 	f.Fuzz(func(t *testing.T, r1, r2, r3 rune) {
-// 		// Check if the runes are valid ASCII. Also skip early ASCII characters before
-// 		// space, as they are not printable.
-// 		if r1 > 127 || r2 > 127 || r3 > 127 || r1 < 32 || r2 < 32 || r3 < 32 {
-// 			t.Skip("non-ASCII character encountered")
-// 		}
-// 		id := Wire{r1, r2, r3}
-// 		// Encode then decode the ID.
-// 		recovered := NameFromInt(id.ID())
+	f.Fuzz(func(t *testing.T, r1, r2, r3 rune) {
+		// Check if the runes are valid ASCII. Also skip early ASCII characters before
+		// space, as they are not printable.
+		if r1 > 127 || r2 > 127 || r3 > 127 || r1 < 32 || r2 < 32 || r3 < 32 {
+			t.Skip("non-ASCII character encountered")
+		}
+		id := Wire{r1, r2, r3}
+		// Encode then decode the ID.
+		recovered := NameFromInt(id.ID())
 
-// 		// Check if the original and recovered IDs match.
-// 		if id != recovered {
-// 			t.Errorf("expected %+v, got %+v", id, recovered)
-// 		}
-// 	})
-// }
+		// Check if the original and recovered IDs match.
+		if id != recovered {
+			t.Errorf("expected %+v, got %+v", id, recovered)
+		}
+	})
+}
 
 func BenchmarkID(b *testing.B) {
 	// Create an ID, then encode and decode it.

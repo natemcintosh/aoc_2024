@@ -1,5 +1,3 @@
-// Most of this code is translated from
-// https://github.com/python/cpython/blob/3.13/Lib/graphlib.py
 package main
 
 import (
@@ -178,15 +176,15 @@ func (g *DiGraph) TopoSort() ([]Wire, error) {
 	return L, nil
 }
 
-type Op int
+type op int
 
 const (
-	AND Op = iota
+	AND op = iota
 	OR
 	XOR
 )
 
-func NewOp(s string) Op {
+func NewOp(s string) op {
 	switch s {
 	case "AND":
 		return AND
@@ -207,7 +205,7 @@ type Gate struct {
 	out Wire
 
 	// The operation to perform
-	op Op
+	op op
 }
 
 // NewGate creates a new gate from a string. Below are examples of the strings that can
