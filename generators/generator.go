@@ -28,9 +28,39 @@ func GenerateCircuit(raw_text string) {
 	}
 
 	f := NewFile("circuits")
-	f.Func().Id("circuit").Params().Block(assignments...)
+	f.
+		Func().
+		Id("circuit").Params(Id("x"), Id("y").Index().Bool()).
+		Index().
+		Bool().
+		Block(assignments...)
 
 	f.Save("circuits/circuit.go")
+
+}
+
+// ParseInputAssignment parses a single input assignment line and returns the
+// corresponding assignment. Inputs look like:
+//
+//	x00: 1
+//	x01: 0
+//	y00: 1
+//	y01: 1
+func ParseInputAssignment(line string) (Code, error) {
+	parts := strings.SplitN(strings.TrimSpace(line), ":", 2)
+	if len(parts) != 2 {
+		return nil, errors.New("invalid input assignment format")
+	}
+	var_name := strings.TrimSpace(parts[0])
+
+	// Get the index from the variable name
+	idx := utils.ParseInt(var_name[1:])
+
+	// Get the first letter of the variable name to determine if it's x or y
+	prefix := string(var_name[0])
+
+	// Create the assignment
+	return Id(var_name).Op(":=").Id(prefix).Index(Lit(idx)), nil
 
 }
 

@@ -35,6 +35,18 @@ func ParseFloat(s string) float64 {
 	return n
 }
 
+// ParseBool converts a string to a bool and panics if it fails
+func ParseBool(s string) bool {
+	s = strings.TrimSpace(s)
+	if s == "1" || strings.ToLower(s) == "true" {
+		return true
+	}
+	if s == "0" || strings.ToLower(s) == "false" {
+		return false
+	}
+	panic("invalid boolean string")
+}
+
 // GetGroups is essentially the same as FindAllStringSubmatch, but it returns
 // just the groups and not the full match
 func GetGroups(re *regexp.Regexp, s string) [][]string {
