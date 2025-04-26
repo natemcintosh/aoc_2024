@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"slices"
 	"strings"
@@ -31,36 +30,17 @@ func GenerateCircuit(raw_text string) {
 		vars = append(vars, variable)
 	}
 
-	// Create all of the logic gate statements
-	gates := make([]Code, 0, len(str_gates))
+	// Generate the gates in valid syntax. Used to do that in this function, but then
+	// it got kinda long.
+	gates := CreateSortedGates(str_gates)
 
-	// Create a DiGraph for dependencies
-	graph := utils.NewDiGraph[string]()
-	for _, gate_str := range str_gates {
-		assignment, deps, err := ParseGate(gate_str)
-		if err != nil {
-			log.Fatalf("Error parsing gate: %v", err)
-		}
-		gates = append(gates, assignment)
-		graph.AddEdge(deps.dep1, deps.val)
-		graph.AddEdge(deps.dep2, deps.val)
-	}
-
-	// Topologically sort the gates
-	sorted_gates, err := graph.TopoSort()
-	if err != nil {
-		log.Fatalf("Error sorting gates: %v", err)
-	}
-
-	// Remove all of the gates that start with "x.." or "y.."
-	sorted_gates = slices.DeleteFunc(sorted_gates, func(gate string) bool {
-		// If the gate starts with x or y, return true, meaning we want to remove it
-		return strings.HasPrefix(gate, "x") || strings.HasPrefix(gate, "y")
-	})
-	fmt.Printf("Sorted gates: %v\n", sorted_gates)
+	// Create the return statement of `[]bool` from all of the variables
+	// starting with `z__`
+	return_stmt := CreateReturnSlice(str_gates)
 
 	// Concatenate the vars and gates into a single slice
-	all_circuit_statements := slices.Concat(vars, gates)
+	all_statements := slices.Concat(vars, gates)
+	all_statements = append(all_statements, return_stmt)
 
 	f := NewFile("circuits")
 	f.
@@ -68,10 +48,90 @@ func GenerateCircuit(raw_text string) {
 		Id("circuit").Params(Id("x"), Id("y").Index().Bool()).
 		Index().
 		Bool().
-		Block(all_circuit_statements...)
+		Block(all_statements...)
 
 	f.Save("circuits/circuit.go")
 
+}
+
+// CreateReturnSlice will count how many gates there are that start with `z`, and then
+// create a `[]bool` directly from the z values
+func CreateReturnSlice(str_gates []string) Code {
+	// Create a slice of all the z gates we see in `str_gates`
+	z_str_gates := make([]string, 0)
+	for _, gate_assignment := range str_gates {
+		parts := strings.Fields(gate_assignment)
+		if strings.HasPrefix(parts[len(parts)-1], "z") {
+			z_str_gates = append(z_str_gates, parts[len(parts)-1])
+		}
+	}
+
+	// Make sure the gates are in the right order
+	slices.Sort(z_str_gates)
+
+	// Make a `[]bool{z00, z01, ...}` from the strings in `z_str_gates`
+	z_slice := make([]Code, len(z_str_gates))
+	for i, z := range z_str_gates {
+		z_slice[i] = Id(z)
+	}
+
+	// Put together the final Code item
+	return Return(Index().Bool().Values(z_slice...))
+}
+
+// CreateSortedGates takes in the raw, unsorted gate operations, converts each gate
+// to a `Code`, and then sorts them so they are syntactically valid.
+func CreateSortedGates(str_gates []string) []Code {
+	// For use in storing the variable assigned to, alongside the Code item
+	type gate struct {
+		var_assigned_to string
+		code            Code
+	}
+	// Create all of the logic gate statements
+	gates := make([]gate, 0, len(str_gates))
+
+	// Create a DiGraph for dependencies
+	graph := utils.NewDiGraph[string]()
+
+	// Create the gates and digraph
+	for _, gate_str := range str_gates {
+		assignment, deps, err := ParseGate(gate_str)
+		if err != nil {
+			log.Fatalf("Error parsing gate: %v", err)
+		}
+		gates = append(gates, gate{deps.val, assignment})
+		graph.AddEdge(deps.dep1, deps.val)
+		graph.AddEdge(deps.dep2, deps.val)
+	}
+
+	// Topologically sort the gates
+	sorted_str_gates, err := graph.TopoSort()
+	if err != nil {
+		log.Fatalf("Error sorting gates: %v", err)
+	}
+
+	// Remove all of the gates that start with "x.." or "y.."
+	sorted_str_gates = slices.DeleteFunc(sorted_str_gates, func(gate string) bool {
+		// If the gate starts with x or y, return true, meaning we want to remove it
+		return strings.HasPrefix(gate, "x") ||
+			strings.HasPrefix(gate, "y")
+	})
+
+	// Create a slice to be returned
+	returned_gates := make([]Code, len(gates))
+
+	// Sort `gates` by looking up its index in `sorted_gates`
+	for _, gate := range gates {
+		// What is the index of this gate in sorted_gates?
+		// Note that the `Code` is actually a number of syntax items, and we want
+		// the first one from that slice.
+		idx := slices.Index(sorted_str_gates, gate.var_assigned_to)
+		if idx == -1 {
+			log.Fatalf("Gate %s not found in sorted gates", gate)
+		}
+		returned_gates[idx] = gate.code
+	}
+	return returned_gates
 }
 
 // ParseInputAssignment parses a single input assignment line and returns the
