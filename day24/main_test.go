@@ -68,7 +68,7 @@ func TestNewID(t *testing.T) {
 // └────►D
 func TestConstructDiGraph(t *testing.T) {
 	// Create a new directed g
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 
 	// Add the edges
 	g.AddEdge(NewWire("AAA"), NewWire("BBB"))
@@ -117,7 +117,7 @@ func TestTopoSort(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(a, c)
 	g.AddEdge(b, d)
@@ -140,7 +140,7 @@ func TestTopoSortCycle(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, c)
 	g.AddEdge(c, d)
@@ -159,7 +159,7 @@ func TestTopoSortAB(t *testing.T) {
 	b := NewWire("BBB")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, a)
 
@@ -180,7 +180,7 @@ func TestTopoSortLine(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, c)
 	g.AddEdge(c, d)
@@ -202,7 +202,7 @@ func TestTopoSortAlmostCircle(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, c)
 	g.AddEdge(c, d)
@@ -225,7 +225,7 @@ func TestTopoSortCircle(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, c)
 	g.AddEdge(c, d)
@@ -249,7 +249,7 @@ func TestTopoSortInnerAlmostCircle(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, c)
 	g.AddEdge(c, d)
@@ -273,7 +273,7 @@ func TestTopoSortInnerCircle(t *testing.T) {
 	d := NewWire("DDD")
 
 	// Create and populate the graph
-	g := NewDiGraph()
+	g := NewDiGraph[Wire]()
 	g.AddEdge(a, b)
 	g.AddEdge(b, c)
 	g.AddEdge(c, d)

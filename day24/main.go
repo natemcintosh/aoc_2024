@@ -65,44 +65,44 @@ func (wire Wire) ID() int64 {
 // DiGraph is a directed graph that stores the edges in both directions. This is
 // necessary to be able to traverse the graph in both directions. The graph is
 // represented as a map of edges.
-type DiGraph struct {
-	from_to map[Wire][]Wire
-	to_from map[Wire][]Wire
+type DiGraph[T comparable] struct {
+	from_to map[T][]T
+	to_from map[T][]T
 }
 
-func NewDiGraph() DiGraph {
-	return DiGraph{
-		from_to: make(map[Wire][]Wire),
-		to_from: make(map[Wire][]Wire),
+func NewDiGraph[T comparable]() DiGraph[T] {
+	return DiGraph[T]{
+		from_to: make(map[T][]T),
+		to_from: make(map[T][]T),
 	}
 }
 
 // AddEdge adds an edge to the graph. It adds the edge in both directions.
-func (g *DiGraph) AddEdge(from, to Wire) {
+func (g *DiGraph[T]) AddEdge(from, to T) {
 	g.from_to[from] = append(g.from_to[from], to)
 	g.to_from[to] = append(g.to_from[to], from)
 
 	// Make sure that there is an entry (even if it is empty) for `to` in the from_to
 	// map. This is necessary to be able to traverse the graph in both directions.
 	if _, ok := g.from_to[to]; !ok {
-		g.from_to[to] = []Wire{}
+		g.from_to[to] = []T{}
 	}
 
 	// Make sure that there is an entry (even if it is empty) for `from` in the to_from
 	// map. This is necessary to be able to traverse the graph in both directions.
 	if _, ok := g.to_from[from]; !ok {
-		g.to_from[from] = []Wire{}
+		g.to_from[from] = []T{}
 	}
 }
 
 // RemoveEdge removes an edge from the graph. It removes the edge in both directions.
-func (g *DiGraph) RemoveEdge(from, to Wire) {
-	g.from_to[from] = slices.DeleteFunc(g.from_to[from], func(w Wire) bool { return w == to })
-	g.to_from[to] = slices.DeleteFunc(g.to_from[to], func(w Wire) bool { return w == from })
+func (g *DiGraph[T]) RemoveEdge(from, to T) {
+	g.from_to[from] = slices.DeleteFunc(g.from_to[from], func(w T) bool { return w == to })
+	g.to_from[to] = slices.DeleteFunc(g.to_from[to], func(w T) bool { return w == from })
 }
 
 // HasEdges checks if there are any edges in the DiGraph at all.
-func (g *DiGraph) HasEdges() bool {
+func (g *DiGraph[T]) HasEdges() bool {
 	// Check that all from_to slices are not empty
 	for _, v := range g.from_to {
 		if len(v) > 0 {
@@ -123,13 +123,13 @@ func (g *DiGraph) HasEdges() bool {
 // TopoSort performs a topological sort on the graph. It returns a slice of wires in
 // topological order. It returns an error if the graph is not a DAG (Directed Acyclic
 // Graph). This is performed using [Kahn's Algorithm](wikipedia.org/Topological_sorting#Kahn's_algorithm)
-func (g *DiGraph) TopoSort() ([]Wire, error) {
+func (g *DiGraph[T]) TopoSort() ([]T, error) {
 	// Create an empty slices that wil container all the sorted elements
-	L := make([]Wire, 0, len(g.from_to))
+	L := make([]T, 0, len(g.from_to))
 
 	// Create a slices that we will iterate over. Start with all nodes that have no
 	// incoming edges
-	S := make([]Wire, 0)
+	S := make([]T, 0)
 
 	// Populate S with all nodes that have no incoming edges
 	// This is done by checking the to_from map. If a node has no incoming edges, it will
@@ -142,7 +142,7 @@ func (g *DiGraph) TopoSort() ([]Wire, error) {
 
 	// If nothing in S, then fail
 	if len(S) == 0 {
-		return []Wire{}, fmt.Errorf("no nodes with no incoming edges")
+		return []T{}, fmt.Errorf("no nodes with no incoming edges")
 	}
 
 	// While S is not empty, remove a node from S and add it to L
@@ -170,7 +170,7 @@ func (g *DiGraph) TopoSort() ([]Wire, error) {
 
 	// If the graph still has edges, there there is at least one cycle in the graph
 	if g.HasEdges() {
-		return []Wire{}, fmt.Errorf("There is a cycle in the graph.")
+		return []T{}, fmt.Errorf("There is a cycle in the graph.")
 	}
 
 	return L, nil
