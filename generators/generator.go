@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"slices"
 	"strings"
@@ -32,13 +33,31 @@ func GenerateCircuit(raw_text string) {
 
 	// Create all of the logic gate statements
 	gates := make([]Code, 0, len(str_gates))
+
+	// Create a DiGraph for dependencies
+	graph := utils.NewDiGraph[string]()
 	for _, gate_str := range str_gates {
-		assignment, err := ParseGate(gate_str)
+		assignment, deps, err := ParseGate(gate_str)
 		if err != nil {
 			log.Fatalf("Error parsing gate: %v", err)
 		}
 		gates = append(gates, assignment)
+		graph.AddEdge(deps.dep1, deps.val)
+		graph.AddEdge(deps.dep2, deps.val)
 	}
+
+	// Topologically sort the gates
+	sorted_gates, err := graph.TopoSort()
+	if err != nil {
+		log.Fatalf("Error sorting gates: %v", err)
+	}
+
+	// Remove all of the gates that start with "x.." or "y.."
+	sorted_gates = slices.DeleteFunc(sorted_gates, func(gate string) bool {
+		// If the gate starts with x or y, return true, meaning we want to remove it
+		return strings.HasPrefix(gate, "x") || strings.HasPrefix(gate, "y")
+	})
+	fmt.Printf("Sorted gates: %v\n", sorted_gates)
 
 	// Concatenate the vars and gates into a single slice
 	all_circuit_statements := slices.Concat(vars, gates)
@@ -84,6 +103,10 @@ func ParseInputAssignment(line string) (Code, error) {
 
 }
 
+type gate_op struct {
+	val, dep1, dep2 string
+}
+
 // ParseGate parses a single gate line and returns the corresponding assignment
 // Input line examples look like:
 //
@@ -93,10 +116,10 @@ func ParseInputAssignment(line string) (Code, error) {
 //	y36 XOR x36 -> hbh
 //	cng XOR mwt -> z42
 //	bsw OR bfp -> pwp
-func ParseGate(line string) (Code, error) {
+func ParseGate(line string) (Code, gate_op, error) {
 	parts := strings.Fields(line)
 	if len(parts) < 5 {
-		return nil, errors.New("invalid gate line format")
+		return nil, gate_op{}, errors.New("invalid gate line format")
 	}
 	result := strings.TrimSpace(parts[4])
 	left := parts[0]
@@ -110,9 +133,11 @@ func ParseGate(line string) (Code, error) {
 	case "XOR":
 		op = "!="
 	default:
-		return nil, errors.New("unknown gate operation")
+		return nil, gate_op{}, errors.New("unknown gate operation")
 	}
-	return Id(result).Op(":=").Id(left).Op(op).Id(right), nil
+	gate := Id(result).Op(":=").Id(left).Op(op).Id(right)
+	deps := gate_op{result, left, right}
+	return gate, deps, nil
 }
 
 func main() {

@@ -27,7 +27,7 @@ func TestParse_gate(t *testing.T) {
 	}
 
 	for _, tc := range test_cases {
-		got, err := ParseGate(tc.line)
+		got, _, err := ParseGate(tc.line)
 		if err != nil {
 			t.Fatalf("parse_gate(%q) returned error: %v", tc.line, err)
 		}
