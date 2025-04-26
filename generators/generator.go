@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"slices"
 	"strings"
 
 	. "github.com/dave/jennifer/jen"
@@ -16,16 +17,31 @@ func GenerateCircuit(raw_text string) {
 		log.Println(text)
 		log.Fatalf("Invalid input format")
 	}
-	gates := strings.Split(text[1], "\n")
+	str_vars := strings.Split(text[0], "\n")
+	str_gates := strings.Split(text[1], "\n")
 
-	assignments := make([]Code, 0, len(gates))
-	for _, gate_str := range gates {
+	// Create all of the variables from the input []bool arguments
+	vars := make([]Code, 0, len(str_vars))
+	for _, var_str := range str_vars {
+		variable, err := ParseInputAssignment(var_str)
+		if err != nil {
+			log.Fatalf("Error parsing variable: %v", err)
+		}
+		vars = append(vars, variable)
+	}
+
+	// Create all of the logic gate statements
+	gates := make([]Code, 0, len(str_gates))
+	for _, gate_str := range str_gates {
 		assignment, err := ParseGate(gate_str)
 		if err != nil {
 			log.Fatalf("Error parsing gate: %v", err)
 		}
-		assignments = append(assignments, assignment)
+		gates = append(gates, assignment)
 	}
+
+	// Concatenate the vars and gates into a single slice
+	all_circuit_statements := slices.Concat(vars, gates)
 
 	f := NewFile("circuits")
 	f.
@@ -33,7 +49,7 @@ func GenerateCircuit(raw_text string) {
 		Id("circuit").Params(Id("x"), Id("y").Index().Bool()).
 		Index().
 		Bool().
-		Block(assignments...)
+		Block(all_circuit_statements...)
 
 	f.Save("circuits/circuit.go")
 
@@ -46,6 +62,10 @@ func GenerateCircuit(raw_text string) {
 //	x01: 0
 //	y00: 1
 //	y01: 1
+//
+// Note that this function does not actually assign the values seen in the input
+// lines. It only creates the assignment statements. The values come from []bool
+// argument to the function.
 func ParseInputAssignment(line string) (Code, error) {
 	parts := strings.SplitN(strings.TrimSpace(line), ":", 2)
 	if len(parts) != 2 {

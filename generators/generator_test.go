@@ -1,10 +1,10 @@
 package main
 
 import (
-	"reflect"
 	"testing"
 
 	. "github.com/dave/jennifer/jen"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParse_gate(t *testing.T) {
@@ -31,8 +31,28 @@ func TestParse_gate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("parse_gate(%q) returned error: %v", tc.line, err)
 		}
-		if reflect.DeepEqual(got, tc.want) == false {
-			t.Errorf("parse_gate(%q) = %v, want %v", tc.line, got, tc.want)
+		assert.Equal(t, tc.want, got)
+	}
+}
+
+func TestParseInputAssignment(t *testing.T) {
+	test_cases := []struct {
+		line string
+		want Code
+	}{
+		{"x00: 1", Id("x00").Op(":=").Id("x").Index(Lit(0))},
+		{"x01: 0", Id("x01").Op(":=").Id("x").Index(Lit(1))},
+		{"y00: 1", Id("y00").Op(":=").Id("y").Index(Lit(0))},
+		{"y01: 1", Id("y01").Op(":=").Id("y").Index(Lit(1))},
+		{"y13: 0", Id("y13").Op(":=").Id("y").Index(Lit(13))},
+		{"a13: 0", Id("a13").Op(":=").Id("a").Index(Lit(13))},
+	}
+
+	for _, tc := range test_cases {
+		got, err := ParseInputAssignment(tc.line)
+		if err != nil {
+			t.Fatalf("parse_input_assignment(%q) returned error: %v", tc.line, err)
 		}
+		assert.Equal(t, tc.want, got)
 	}
 }
