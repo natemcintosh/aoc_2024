@@ -20,6 +20,9 @@ func GenerateCircuit(raw_text string) {
 	str_vars := strings.Split(text[0], "\n")
 	str_gates := strings.Split(text[1], "\n")
 
+	// Create the function that returns the x and y values in the input file
+	// input_vals := CreateInputVals
+
 	// Create all of the variables from the input []bool arguments
 	vars := make([]Code, 0, len(str_vars))
 	for _, var_str := range str_vars {
@@ -39,17 +42,28 @@ func GenerateCircuit(raw_text string) {
 	return_stmt := CreateReturnSlice(str_gates)
 
 	// Concatenate the vars and gates into a single slice
-	all_statements := slices.Concat(vars, gates)
-	all_statements = append(all_statements, return_stmt)
+	function_statements := slices.Concat(vars, gates)
+	function_statements = append(function_statements, return_stmt)
 
-	f := NewFile("circuits")
-	f.
-		Func().
-		Id("circuit").Params(Id("x"), Id("y").Index().Bool()).
+	// The circuit function
+	circ_fn := Func().
+		Id("Circuit").
+		Params(Id("x"), Id("y").Index().Bool()).
 		Index().
 		Bool().
-		Block(all_statements...)
+		Block(function_statements...).
+		Line()
 
+	// The default input values
+	input_vals := Func().
+		Id("InputVals").
+		Params().
+		Parens(List(Index().Bool(), Index().Bool())).
+		Block(Return(True())).
+		Line()
+
+	f := NewFile("circuits")
+	f.Add(input_vals).Add(circ_fn)
 	f.Save("circuits/circuit.go")
 
 }
