@@ -45,8 +45,16 @@ func GenerateCircuit(raw_text string) {
 	function_statements := slices.Concat(vars, gates)
 	function_statements = append(function_statements, return_stmt)
 
+	// Create the default input values
+	default_vals_func := CreateDefaultValuesFunc(str_vars)
+
+	f := NewFile("circuits")
+
+	// The default input values
+	f.Add(default_vals_func)
+
 	// The circuit function
-	circ_fn := Func().
+	f.Func().
 		Id("Circuit").
 		Params(Id("x"), Id("y").Index().Bool()).
 		Index().
@@ -54,18 +62,8 @@ func GenerateCircuit(raw_text string) {
 		Block(function_statements...).
 		Line()
 
-	// The default input values
-	input_vals := Func().
-		Id("InputVals").
-		Params().
-		Parens(List(Index().Bool(), Index().Bool())).
-		Block(Return(True())).
-		Line()
-
-	f := NewFile("circuits")
-	f.Add(input_vals).Add(circ_fn)
 	f.Save("circuits/circuit.go")
-
+	// fmt.Printf("%#v", f)
 }
 
 // CreateReturnSlice will count how many gates there are that start with `z`, and then
@@ -212,6 +210,70 @@ func ParseGate(line string) (Code, gate_op, error) {
 	gate := Id(result).Op(":=").Id(left).Op(op).Id(right)
 	deps := gate_op{result, left, right}
 	return gate, deps, nil
+}
+
+// CreateDefaultValuesFunc generates a function that returns the default input values
+// from the input text.
+// The lines of input values look like
+//
+// x00: 1
+// x01: 1
+// x02: 0
+// y00: 1
+// y01: 0
+// y02: 1
+func CreateDefaultValuesFunc(str_values []string) Code {
+	// Split the values into two slices, one for x and one for y
+	x_str_vals := make([]string, 0)
+	y_str_vals := make([]string, 0)
+	for _, val := range str_values {
+		if strings.HasPrefix(val, "x") {
+			x_str_vals = append(x_str_vals, val)
+		} else if strings.HasPrefix(val, "y") {
+			y_str_vals = append(y_str_vals, val)
+		}
+	}
+
+	// Sort them
+	slices.Sort(x_str_vals)
+	slices.Sort(y_str_vals)
+
+	// Create the boolean Code values
+	x_vals := make([]Code, len(x_str_vals))
+	y_vals := make([]Code, len(y_str_vals))
+	for i, val := range x_str_vals {
+		// Split the string to get the value
+		str_val := strings.TrimSpace(strings.Split(val, ":")[1])
+		if str_val == "1" {
+			x_vals[i] = True()
+		} else if str_val == "0" {
+			x_vals[i] = False()
+		} else {
+			log.Fatalf("unknown value %s", str_val)
+		}
+	}
+	for i, val := range y_str_vals {
+		// Split the string to get the value
+		str_val := strings.TrimSpace(strings.Split(val, ":")[1])
+		if str_val == "1" {
+			y_vals[i] = True()
+		} else if str_val == "0" {
+			y_vals[i] = False()
+		} else {
+			log.Fatalf("unknown value %s", str_val)
+		}
+	}
+
+	return Func().Id("InputValues").
+		Params().
+		Parens(List(Index().Bool(), Index().Bool())).
+		Block(
+			Return(
+				Index().Bool().Values(x_vals...),
+				Index().Bool().Values(y_vals...),
+			),
+		).
+		Line()
 }
 
 func main() {
