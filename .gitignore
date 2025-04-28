@@ -23,6 +23,3 @@ go.work.sum
 
 # env file
 .env
-
-# We generate the code in the circuits/ directory, so ignore that
-circuits/
