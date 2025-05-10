@@ -158,7 +158,7 @@ func part2(robots []Robot, board_x, board_y, max_iters int) int {
 		arr[i] = make([]int, board_x)
 	}
 
-	for step_n := 0; step_n < max_iters; step_n++ {
+	for step_n := range max_iters {
 		// Make sure we start with an empty map.
 		for _, row := range arr {
 			clear(row)

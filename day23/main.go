@@ -66,8 +66,8 @@ func parse(raw_text string) Graph {
 	// Create the empty graph
 	g := Graph{make(map[[2]Node]struct{}), make(map[Node]int)}
 	// For each line, for each pair of letters, add an edge to the graph
-	lines := strings.Split(strings.TrimSpace(raw_text), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(strings.TrimSpace(raw_text), "\n")
+	for line := range lines {
 		// Split around the "-"
 		parts := strings.Split(line, "-")
 		if len(parts) != 2 {

@@ -42,8 +42,8 @@ func NewRules(input string) Rules {
 	}
 
 	// Parse the rules
-	rules := strings.Split(parts[0], "\n")
-	for _, rule := range rules {
+	rules := strings.SplitSeq(parts[0], "\n")
+	for rule := range rules {
 		// Split the rule into the before and after
 		parts := strings.Split(rule, "|")
 		if len(parts) != 2 {
@@ -62,8 +62,8 @@ func NewRules(input string) Rules {
 	}
 
 	// Parse the updates
-	updates := strings.Split(parts[1], "\n")
-	for _, update := range updates {
+	updates := strings.SplitSeq(parts[1], "\n")
+	for update := range updates {
 		// Split the update into the values
 		update_line := strings.Split(update, ",")
 		if len(update_line) == 0 {

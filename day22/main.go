@@ -125,7 +125,7 @@ func track_all_changes_for_seller(secret, n_steps int, changes map[[4]int]int) m
 
 // step_n repeats the step function n times
 func step_n(secret int, n int) int {
-	for i := 0; i < n; i++ {
+	for range n {
 		secret = step(secret)
 	}
 	return secret

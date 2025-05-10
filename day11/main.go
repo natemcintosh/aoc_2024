@@ -60,7 +60,7 @@ func solve(stones []int, n_steps int) int {
 	out_map := make(map[int]int)
 
 	// For n_steps, update all the stones in `sm`
-	for i := 0; i < n_steps; i++ {
+	for range n_steps {
 		// Make sure we start with a fresh out_map each iteration
 		clear(out_map)
 

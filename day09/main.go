@@ -71,7 +71,7 @@ func create_disk(input string) ([]int, []DiskEntry) {
 			}
 
 			// Add the file_id to the disk
-			for i := 0; i < num; i++ {
+			for range num {
 				disk[disk_offset] = file_id
 				disk_offset += 1
 			}
@@ -88,7 +88,7 @@ func create_disk(input string) ([]int, []DiskEntry) {
 
 			// For odd idx, this item is a file, and we need to fill the disk with
 			// -1 of length num
-			for i := 0; i < num; i++ {
+			for range num {
 				disk[disk_offset] = -1
 				disk_offset += 1
 			}
