@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	. "github.com/dave/jennifer/jen"
+	"github.com/natemcintosh/aoc_2024/circuits"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,5 +55,15 @@ func TestParseInputAssignment(t *testing.T) {
 			t.Fatalf("parse_input_assignment(%q) returned error: %v", tc.line, err)
 		}
 		assert.Equal(t, tc.want, got)
+	}
+}
+
+func BenchmarkCircuit(b *testing.B) {
+	// Get the input values
+	x, y := circuits.InputValues()
+
+	// Benchmark the circuit
+	for b.Loop() {
+		circuits.Circuit(x, y)
 	}
 }

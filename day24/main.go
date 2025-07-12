@@ -23,13 +23,11 @@ func part1() int {
 	slices.Reverse(z)
 	var str_z strings.Builder
 	for _, bit := range z {
-		var ibit int
 		if bit {
-			ibit = 1
+			str_z.WriteString("1")
 		} else {
-			ibit = 0
+			str_z.WriteString("0")
 		}
-		str_z.WriteString(strconv.Itoa(ibit))
 	}
 	z_bits := str_z.String()
 
@@ -41,11 +39,6 @@ func part1() int {
 	}
 	return int(parsed_val)
 }
-
-// The input text of the puzzle
-//
-//go:embed input.txt
-var raw_text string
 
 func main() {
 	// === Part 1 ====================================================
